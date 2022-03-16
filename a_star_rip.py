@@ -64,17 +64,25 @@ def astar(maze, start, end):
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            print((len(maze)-1))
-            print((len(maze[len(maze)-1]) -1))
-            print('node position:')
-            print(node_position[0])
-            print(node_position[1])
-            print('')
+            # print((len(maze)-1))
+            # print((len(maze[len(maze)-1]) -1))
+            # print('node position:')
+            # print(node_position[0])
+            # print(node_position[1])
+            # print("Maze value:")
+            # print(maze[node_position[0]][node_position[1]])
+            # print('')
             if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
                 continue
 
             # Make sure walkable terrain
             if maze[node_position[0]][node_position[1]] != 0:
+                print('node position:')
+                print(node_position[0])
+                print(node_position[1])
+                print("Maze value:")
+                print(maze[node_position[0]][node_position[1]])
+                print('')
                 continue
 
             # Create new node
@@ -108,15 +116,15 @@ def astar(maze, start, end):
 
 def main():
 
-    maze = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
-            [0, 0, 0, 0, 1, 0, 0, 0, 0, 0],
+    maze = [[0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 1, 1, 1, 1, 0, 0, 0, 0],
+            [0, 0, 0, 0, 0, 1, 0, 0, 0, 0],
+            [0, 1, 1, 1, 0, 1, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
+            [0, 1, 0, 0, 0, 0, 0, 0, 0, 0],
             [0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
     start = (0, 0)

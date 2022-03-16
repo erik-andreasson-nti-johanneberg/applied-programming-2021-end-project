@@ -1,12 +1,67 @@
+from matplotlib.pyplot import grid
 import pygame
 import sys
 import random
+import time
+
+#find a way to properly remove the old ant from the grid dynamically and fix non working walls in the map
+#perhaps find a way to create an array that contains the old coordinates and the new coordinates using global variables?
 
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 RED = (255,0,0)
 WINDOW_HEIGHT = 625
 WINDOW_WIDTH = 1250
+map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 1, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
 class Node():
     """A node class for A* Pathfinding"""
@@ -32,21 +87,35 @@ def main():
     x = 0
     y = 0
 
-    start = (0,0)
-    end = (10,10)
+    start = (3,11)
+    end = (8,4)
 
-    while True:
+    path = astar(start,end)
+    print(path)
+
+    grid_path = gridpath(path)
+    print(grid_path)
+
+    prev_cord = [-25,-25]
+
+    for cord in grid_path:
         drawGrid()
-        drawant(x,y)
+        time.sleep(1)
+        removeant(prev_cord)
+        prev_cord = cord
+        drawant(cord)
         for event in pygame.event.get():
             if event.type == pygame.QUIT:
                 pygame.quit()
                 sys.exit()
 
-        path = astar(start,end)
-        
         pygame.display.update()
 
+def removeant(cord):
+    antsize = 25
+    removeant = pygame.Rect(cord[1], cord[0], antsize, antsize)
+    pygame.draw.rect(SCREEN, BLACK, removeant)
+    pygame.display.update()
 
 def drawGrid():
     blockSize = 25 #Set the size of the grid block
@@ -55,10 +124,24 @@ def drawGrid():
             rect = pygame.Rect(x, y, blockSize, blockSize)
             pygame.draw.rect(SCREEN, WHITE, rect, 1)
 
-def drawant(x,y): #draws a red rectangle for the ant
+def drawant(cord): #draws a red rectangle for the ant
     antsize = 25
-    ant = pygame.Rect(x,y, antsize, antsize)
+    # removeant = pygame.Rect(cord[1]-25, cord[0]-25, antsize, antsize)
+    # pygame.draw.rect(SCREEN, BLACK, removeant)
+    # pygame.display.update()
+    ant = pygame.Rect(cord[1], cord[0], antsize, antsize)
     pygame.draw.rect(SCREEN, RED, ant)
+
+def gridpath(path):
+    grid_path = []
+    for cord in path:
+        new_cord = []
+        x = 25*cord[0]
+        y = 25*cord[1]
+        new_cord.append(x)
+        new_cord.append(y)
+        grid_path.append(new_cord)
+    return grid_path
 
 def astar(start,end): #pathfinding system
     open_list = []
@@ -76,22 +159,42 @@ def astar(start,end): #pathfinding system
     while True:
         current_node = open_list[0]
         current_index = 0
+        previous_nodes_list = []
+        # print(open_list)
         for index, item in enumerate(open_list):
+            # print("F_values")
+            # print("value for checked item is : {}".format(item.f))
+            # print("value for current node is : {}".format(current_node.f))
+            # print('')
+            # print("item cords and f value")
+            # print(item.position)
+            # print(item.f)
+            # print("")
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
+        print("")
+        print("")
+        print("f value of current node")
+        print(current_node.f)
+        print("current node cords")
+        print(current_node.position)
+        print("")
         
          # Pop current off open list, add to closed list
         open_list.pop(current_index)
         closed_list.append(current_node)
+        previous_nodes_list.append(current_node)
 
         # Found the goal
-        if current_node == end_node:
-            print('Awesome')
+        # if current_node == end_node:
+        #     pass
 
         current = current_node
         if current is not None:
             path.append(current.position)
+
+        # print(current.position)
 
         if current_node == end_node:
             return path
@@ -103,14 +206,21 @@ def astar(start,end): #pathfinding system
             node_position = (current_node.position[0] + new_position[0], current_node.position[1] + new_position[1])
 
             # Make sure within range
-            if node_position[0] > (len(maze) - 1) or node_position[0] < 0 or node_position[1] > (len(maze[len(maze)-1]) -1) or node_position[1] < 0:
+            if node_position[0] > (len(map) - 1) or node_position[0] < 0 or node_position[1] > (len(map[len(map)-1]) -1) or node_position[1] < 0:
                 continue
 
             # Make sure walkable terrain
-            # if maze[node_position[0]][node_position[1]] != 0:
-            #     continue
+            # print('')
+            # print(map[node_position[0]][node_position[1]])
+            if map[node_position[0]][node_position[1]] != 0:
+                # print('passed')
+                # print('node_position after checking walkable:')
+                # print(node_position)
+                # print('')
+                continue
 
             # Create new node
+            # print(node_position)
             new_node = Node(current_node, node_position)
 
             # Append
@@ -122,6 +232,13 @@ def astar(start,end): #pathfinding system
             # Child is on the closed list
             for closed_child in closed_list:
                 if child == closed_child:
+                    continue
+            
+            for previous_node in previous_nodes_list:
+                print("previous nodes")
+                print(previous_node.position)
+                print("")
+                if previous_node == child:
                     continue
 
             # Create the f, g, and h values
@@ -135,6 +252,9 @@ def astar(start,end): #pathfinding system
                     continue
 
             # Add the child to the open list
+            print("child position")
+            print(child.position)
+            print("")
             open_list.append(child)
 
 main()
