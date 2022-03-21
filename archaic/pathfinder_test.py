@@ -154,12 +154,12 @@ def astar(start,end): #pathfinding system
     end_node.g = end_node.h = end_node.f = 0
 
     open_list.append(start_node)
+    previous_nodes_list = []
 
     # Get the current node
     while True:
         current_node = open_list[0]
         current_index = 0
-        previous_nodes_list = []
         # print(open_list)
         for index, item in enumerate(open_list):
             # print("F_values")
@@ -173,13 +173,13 @@ def astar(start,end): #pathfinding system
             if item.f < current_node.f:
                 current_node = item
                 current_index = index
-        print("")
-        print("")
-        print("f value of current node")
-        print(current_node.f)
-        print("current node cords")
-        print(current_node.position)
-        print("")
+        # print("")
+        # print("")
+        # print("f value of current node")
+        # print(current_node.f)
+        # print("current node cords")
+        # print(current_node.position)
+        # print("")
         
          # Pop current off open list, add to closed list
         open_list.pop(current_index)
@@ -200,6 +200,8 @@ def astar(start,end): #pathfinding system
             return path
 
         children = []
+        print("")
+        print("new current node:")
         for new_position in [(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]: # Adjacent squares
 
             # Get node position
@@ -233,13 +235,21 @@ def astar(start,end): #pathfinding system
             for closed_child in closed_list:
                 if child == closed_child:
                     continue
-            
+            print("")
+            print("new child")
+            # print(previous_nodes_list)
             for previous_node in previous_nodes_list:
                 print("previous nodes")
                 print(previous_node.position)
+                print("current child")
+                print(child.position)
                 print("")
                 if previous_node == child:
+                    print("it works")
                     continue
+
+            print("child position")
+            print(child.position)
 
             # Create the f, g, and h values
             child.g = current_node.g + 1
@@ -252,9 +262,9 @@ def astar(start,end): #pathfinding system
                     continue
 
             # Add the child to the open list
-            print("child position")
-            print(child.position)
-            print("")
+            # print("child position")
+            # print(child.position)
+            # print("")
             open_list.append(child)
 
 main()
