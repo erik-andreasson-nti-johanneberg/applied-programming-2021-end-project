@@ -10,8 +10,8 @@ def main():
 	L            = 10       # size of box
 	R            = 1        # interaction radius
 	dt           = 0.1      # time step
-	Nt           = 200      # number of time steps
-	N            = 500      # number of birds
+	Nt           = 300      # number of time steps
+	N            = 700      # number of birds
 	plotRealTime = True
 	
 	# Initialize
