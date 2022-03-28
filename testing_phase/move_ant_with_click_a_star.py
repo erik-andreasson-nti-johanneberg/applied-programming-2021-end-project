@@ -1,4 +1,7 @@
+# mixed up x and y with row and column for astar. Find the issue. I know you can king
+
 from functional.a_star_pure import astar
+from functional.a_star_pure import find_opening
 from matplotlib.pyplot import grid
 import pygame
 import sys
@@ -19,29 +22,35 @@ class Node():
     def __eq__(self, other):
         return self.position == other.position
 
+class Ant():
+    #ant class
+    def __init__(self, position=None, rect=None):
+        self.position = position
+        self.rect = rect
+
 #map layout and size
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 RED = (255,0,0)
 WINDOW_HEIGHT = 625
 WINDOW_WIDTH = 1250
-map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+map = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -78,19 +87,64 @@ map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
 
 # game clock and loop
 def main():
-    global SCREEN, CLOCK
+    global SCREEN, CLOCK, antsize
     pygame.init()
     SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
     CLOCK = pygame.time.Clock()
+    antsize = 25
     SCREEN.fill(BLACK)
     x = 0
     y = 0
-    startant()
+    ant_already_clicked = False
+    drawGrid()
+    current_ant = pre_ant()
     while True:
-        for eve in pygame.event.get():
-            if eve.type==pygame.QUIT:
+        for event in pygame.event.get():
+            if event.type==pygame.QUIT:
                 pygame.quit()
                 sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0]:
+                    print('Left mouse button clicked')
+                    if ant_already_clicked:
+                        prev_cord = [-25,-25]
+                        ant_already_clicked = False
+                        mouse_position = pygame.mouse.get_pos()
+                        # print(mouse_position)
+                        column, r1 = divmod(mouse_position[0],25)
+                        row, r2 = divmod(mouse_position[1],25)
+                        end = (row, column)
+                        print(end)
+                        path = astar(current_ant.position,end,map)
+                        print('pure path')
+                        print(path)
+                        grid_path = gridpath(path)
+                        print(grid_path)
+
+                        for cord in grid_path:
+                            print('here is the cord')
+                            print(cord)
+                            drawGrid()
+                            time.sleep(0.5)
+                            removeant(prev_cord)
+                            prev_cord = cord
+                            drawant(cord)
+                            pygame.display.update()
+                        ant = pygame.Rect(end[1]*25, end[0]*25, antsize, antsize)
+                        current_ant.rect = ant
+                        current_ant.position = end
+                        print(current_ant.rect)
+                        print(current_ant.position)
+                        continue
+                        
+                    print(pygame.mouse.get_pos())
+                    if current_ant.rect.collidepoint(pygame.mouse.get_pos()):
+                        print("Mouse clicked on the ant")
+                        ant_already_clicked = True
+                print('')
+        pygame.display.update()
+        
 
     # start = (3,11)
     # end = (8,4)
@@ -137,10 +191,12 @@ def drawant(cord): #draws a red rectangle for the ant
     ant = pygame.Rect(cord[1], cord[0], antsize, antsize)
     pygame.draw.rect(SCREEN, RED, ant)
 
-def startant():
+def pre_ant():
     antsize = 25
     ant = pygame.Rect(0,0, antsize, antsize)
     pygame.draw.rect(SCREEN, RED, ant)
+    current_ant = Ant((0,0), ant)
+    return current_ant
 
 # function that converts the astar path to a pixel format path
 def gridpath(path):
@@ -153,3 +209,5 @@ def gridpath(path):
         new_cord.append(y)
         grid_path.append(new_cord)
     return grid_path
+
+main()
