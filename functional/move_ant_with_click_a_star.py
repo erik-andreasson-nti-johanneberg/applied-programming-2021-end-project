@@ -1,5 +1,8 @@
-# mixed up x and y with row and column for astar. Find the issue. I know you can king
+# Discovered a limitation for the gaem map when considering pathfinding. Outer edge of the map must be walls. 
+# At all times ants must be surrounded by walls with holes for passage
+# cannot move an ant directly next to a wall. Pathfinding can't figure out what to do. Fix it if you want or just work around it
 
+from numpy import block
 from functional.a_star_pure import astar
 from functional.a_star_pure import find_opening
 from matplotlib.pyplot import grid
@@ -32,25 +35,26 @@ class Ant():
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 RED = (255,0,0)
+BLUE = (0,0,255)
 WINDOW_HEIGHT = 625
 WINDOW_WIDTH = 1250
-map = [[0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+map = [[0, 0, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 1, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -96,7 +100,7 @@ def main():
     x = 0
     y = 0
     ant_already_clicked = False
-    drawGrid()
+    drawGrid(map)
     current_ant = pre_ant()
     while True:
         for event in pygame.event.get():
@@ -116,16 +120,19 @@ def main():
                         row, r2 = divmod(mouse_position[1],25)
                         end = (row, column)
                         print(end)
+                        print('current ant position before astar')
+                        print(current_ant.position)
                         path = astar(current_ant.position,end,map)
-                        print('pure path')
+                        print('path')
                         print(path)
+                        print('beginning of grid path func')
                         grid_path = gridpath(path)
                         print(grid_path)
 
                         for cord in grid_path:
                             print('here is the cord')
                             print(cord)
-                            drawGrid()
+                            drawGrid(map)
                             time.sleep(0.5)
                             removeant(prev_cord)
                             prev_cord = cord
@@ -146,30 +153,6 @@ def main():
         pygame.display.update()
         
 
-    # start = (3,11)
-    # end = (8,4)
-
-    # path = astar(start,end)
-    # print(path)
-
-    # grid_path = gridpath(path)
-    # print(grid_path)
-
-    prev_cord = [-25,-25]
-
-    # for cord in grid_path:
-    #     drawGrid()
-    #     time.sleep(1)
-    #     removeant(prev_cord)
-    #     prev_cord = cord
-    #     drawant(cord)
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             pygame.quit()
-    #             sys.exit()
-
-    #     pygame.display.update()
-
 # function that removes the previous ant location
 def removeant(cord):
     antsize = 25
@@ -178,12 +161,28 @@ def removeant(cord):
     pygame.display.update()
 
 # function that draws the grid layout to the screen
-def drawGrid():
+def drawGrid(map):
     blockSize = 25 #Set the size of the grid block
-    for x in range(0, WINDOW_WIDTH, blockSize):
-        for y in range(0, WINDOW_HEIGHT, blockSize):
-            rect = pygame.Rect(x, y, blockSize, blockSize)
-            pygame.draw.rect(SCREEN, WHITE, rect, 1)
+    for index_x, x in enumerate(range(0, WINDOW_WIDTH, blockSize)):
+        for index_y, y in enumerate(range(0, WINDOW_HEIGHT, blockSize)):
+            # q1, r1 = divmod(x, blockSize)
+            # q2, r2 = divmod(y, blockSize)
+            # print('q1')
+            # print(q1)
+            # print('q2')
+            # print(q2)
+            # print('value:')
+            # print(map[q2][q1])
+            # print('')
+            if map[index_x][index_y] == 1:
+                print('yay')
+                rect = pygame.Rect(y, x, blockSize, blockSize)
+                rect2 = pygame.Rect(x, y, blockSize, blockSize)
+                pygame.draw.rect(SCREEN, BLUE, rect)
+                pygame.draw.rect(SCREEN, WHITE, rect2, 1)
+            else:
+                rect = pygame.Rect(x, y, blockSize, blockSize)
+                pygame.draw.rect(SCREEN, WHITE, rect, 1)
 
 # function that draws the ant to the screen
 def drawant(cord): #draws a red rectangle for the ant
@@ -202,6 +201,8 @@ def pre_ant():
 def gridpath(path):
     grid_path = []
     for cord in path:
+        # print('cord in gridpath:')
+        # print(cord)
         new_cord = []
         x = 25*cord[0]
         y = 25*cord[1]
