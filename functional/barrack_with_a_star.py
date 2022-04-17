@@ -6,15 +6,18 @@ import time
 from functional.a_star_pure import astar
 pygame.init()
 
+CLOCK = pygame.time.Clock()
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
 BLUE = (0,0,255)
 RED = (255,0,0)
+GREEN = (0,255,0)
 WINDOW_HEIGHT = 625
 WINDOW_WIDTH = 1250
 num_cells_width = 50
 num_cells_height = 25
 blockSize = 25
+SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
 map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
@@ -66,6 +69,9 @@ map = [[0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
 
+# Global fonts
+barrack_font = pygame.font.Font('freesansbold.ttf', 32)
+menu_font = pygame.font.Font('freesansbold.ttf', 30)
 
 #barracks class
 class Barrack():
@@ -75,10 +81,16 @@ class Barrack():
 
 #ant class
 class Ant():
-    #ant class
     def __init__(self, position=None, rect=None):
         self.position = position
         self.rect = rect
+
+#Draws text to the screen. Must be called after the backdrop menu has been drawn to the screen
+def draw_text(text, font, text_color, background_color, surface, x, y):
+    textobj = font.render(text, True, text_color, background_color)
+    textrect = textobj.get_rect()
+    textrect.center = (x, y)
+    surface.blit(textobj, textrect)
 
 def drawGrid(map):
     blockSize = 25 #Set the size of the grid block
@@ -93,42 +105,28 @@ def drawGrid(map):
                 rect = pygame.Rect(x, y, blockSize, blockSize)
                 pygame.draw.rect(SCREEN, WHITE, rect, 1)
 
-#removes the menu buttons from the screen
-#probably needs to be reworked now that the menu becomes one giant window instead of buttons
-def remove_menu(button_list):
+#removes the menu from the screen and redraws all buildings and ants
+def remove_menu(ants, building_list):
     replace_with_black_rect = pygame.Rect(75, 75, 1100, 475)
     pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
-    for button in button_list:
-        replace_with_black_rect = pygame.Rect(button[0], button[1], button[2], button[2])
-        pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
-        # num_of_rects = button[2]/blockSize
-        # i = 0
-        # while i < num_of_rects/2:
-        #     draw_over_rect = pygame.Rect((button[0]+i*blockSize, button[1], blockSize, blockSize))
-        #     pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
-        #     i += 1
-        # i = 0
-        # while i < num_of_rects/2:
-        #     draw_over_rect = pygame.Rect((button[0], button[1]+i*blockSize, blockSize, blockSize))
-        #     pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
-        #     i += 1
+    for building in building_list:
+        building_rect = pygame.Rect(building.position[0]*25, building.position[1]*25, 50, 50)
+        pygame.draw.rect(SCREEN, WHITE, building_rect)
+    for ant in ants:
+        ant_rect = pygame.Rect(ant.position[0]*25, ant.position[1]*25, blockSize, blockSize)
+        pygame.draw.rect(SCREEN, RED, ant_rect)
     
-def menu(ants):
+#Menus
+# barrack_menu    
+def menu(ants, buildings):
     # Menu screen
     menu_rect = pygame.Rect(75, 75, 1100, 475)
     pygame.draw.rect(SCREEN, BLUE, (menu_rect))
     #Button text
     #Chad myra
-    font = pygame.font.Font('freesansbold.ttf', 32)
-    text_chad = font.render('Chadmyra', True, RED, BLACK)
-    textRect_chad = text_chad.get_rect()
-    textRect_chad.center = (825, 300)
-    SCREEN.blit(text_chad, textRect_chad)
+    draw_text('Chadmyra', barrack_font, RED, BLACK, SCREEN, 825, 300)
     #beta myra
-    text_beta = font.render('Betamyra', True, RED, BLACK)
-    textRect_beta = text_beta.get_rect()
-    textRect_beta.center = (425, 300)
-    SCREEN.blit(text_beta, textRect_beta)
+    draw_text('Betamyra', barrack_font, RED, BLACK, SCREEN, 425, 300)
     selected = False
     while True:
         if selected:
@@ -151,20 +149,65 @@ def menu(ants):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if chad_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu([[800, 200, 50], [400, 200, 50]])
+                        remove_menu(ants, buildings)
                         chad_myra = Ant(position_chad_myra, chad_myra_rect)
                         ants.append(chad_myra)
                         pygame.draw.rect(SCREEN, BLUE, (chad_myra_rect))
                         selected = True
                         break
                     if beta_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu([[500, 500, 50], [500, 200, 50]])
+                        remove_menu(ants, buildings)
                         beta_myra = Ant(position_beta_myra, beta_myra_rect)
                         ants.append(beta_myra)
                         pygame.draw.rect(SCREEN, RED, (beta_myra_rect))
                         selected = True
                         break
         pygame.display.update()
+# main menu
+def main_menu():
+    SCREEN.fill((0,0,0))
+    draw_text('Main Menu', menu_font, WHITE, BLACK, SCREEN, WINDOW_WIDTH // 2, 50)
+    while True:
+        mx, my = pygame.mouse.get_pos()
+ 
+        menu_button_1 = pygame.Rect(0, 0, 200, 50)
+        menu_button_2 = pygame.Rect(0, 0, 200, 50)
+        menu_button_3 = pygame.Rect(0, 0, 200, 50)
+        menu_button_1.center = (WINDOW_WIDTH // 2, 100)
+        menu_button_2.center = (WINDOW_WIDTH // 2, 175)
+        menu_button_3.center = (WINDOW_WIDTH // 2, 500)
+        if menu_button_1.collidepoint((mx, my)):
+            if click:
+                main()
+        # if menu_button_2.collidepoint((mx, my)):
+        #     if click:
+        #         options()
+        if menu_button_3.collidepoint((mx, my)):
+            if click:
+                quit()
+        pygame.draw.rect(SCREEN, BLUE, menu_button_1)
+        draw_text('Game', menu_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH // 2, 100)
+        pygame.draw.rect(SCREEN, GREEN, menu_button_2)
+        draw_text('Options', menu_font, WHITE, GREEN, SCREEN, WINDOW_WIDTH // 2, 175)
+        pygame.draw.rect(SCREEN, RED, menu_button_3)
+        draw_text('Quit', menu_font, WHITE, RED, SCREEN, WINDOW_WIDTH // 2, 500)
+ 
+ 
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+ 
+        pygame.display.update()
+        CLOCK.tick(60)
 
 def barrack_():
     position = [4,4]
@@ -199,13 +242,11 @@ def gridpath(path):
 
 def main():
     global SCREEN, CLOCK
-    pygame.init()
-    SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-    CLOCK = pygame.time.Clock()
     SCREEN.fill(BLACK)
     barrack = barrack_()
     ant_already_clicked = False
     ants = []
+    buildings = [barrack]
     while True:
         drawGrid(map)
         for event in pygame.event.get():
@@ -217,7 +258,7 @@ def main():
                 if mouse_presses[0]:  # Left mouse button.
                     # Check if the barrack collides with the mouse pos.
                     if barrack.rect.collidepoint((pygame.mouse.get_pos())):
-                        menu(ants)
+                        menu(ants, buildings)
                     if ant_already_clicked:
                         prev_cord = [-25,-25]
                         ant_already_clicked = False
@@ -258,4 +299,4 @@ def main():
 
         pygame.display.update()
 
-main()
+main_menu()
