@@ -1,8 +1,10 @@
+from numpy import blackman
 import pygame
 import sys
 import random
 import time
 from functional.a_star_pure import astar
+pygame.init()
 
 BLACK = (0, 0, 0)
 WHITE = (200, 200, 200)
@@ -91,31 +93,48 @@ def drawGrid(map):
                 rect = pygame.Rect(x, y, blockSize, blockSize)
                 pygame.draw.rect(SCREEN, WHITE, rect, 1)
 
+#removes the menu buttons from the screen
+#probably needs to be reworked now that the menu becomes one giant window instead of buttons
 def remove_menu(button_list):
+    replace_with_black_rect = pygame.Rect(75, 75, 1100, 475)
+    pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
     for button in button_list:
         replace_with_black_rect = pygame.Rect(button[0], button[1], button[2], button[2])
         pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
-        num_of_rects = button[2]/blockSize
-        i = 0
-        while i < num_of_rects/2:
-            draw_over_rect = pygame.Rect((button[0]+i*blockSize, button[1], blockSize, blockSize))
-            pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
-            i += 1
-        i = 0
-        while i < num_of_rects/2:
-            draw_over_rect = pygame.Rect((button[0], button[1]+i*blockSize, blockSize, blockSize))
-            pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
-            i += 1
+        # num_of_rects = button[2]/blockSize
+        # i = 0
+        # while i < num_of_rects/2:
+        #     draw_over_rect = pygame.Rect((button[0]+i*blockSize, button[1], blockSize, blockSize))
+        #     pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
+        #     i += 1
+        # i = 0
+        # while i < num_of_rects/2:
+        #     draw_over_rect = pygame.Rect((button[0], button[1]+i*blockSize, blockSize, blockSize))
+        #     pygame.draw.rect(SCREEN, WHITE, draw_over_rect, 1)
+        #     i += 1
     
-
-
 def menu(ants):
+    # Menu screen
+    menu_rect = pygame.Rect(75, 75, 1100, 475)
+    pygame.draw.rect(SCREEN, BLUE, (menu_rect))
+    #Button text
+    #Chad myra
+    font = pygame.font.Font('freesansbold.ttf', 32)
+    text_chad = font.render('Chadmyra', True, RED, BLACK)
+    textRect_chad = text_chad.get_rect()
+    textRect_chad.center = (825, 300)
+    SCREEN.blit(text_chad, textRect_chad)
+    #beta myra
+    text_beta = font.render('Betamyra', True, RED, BLACK)
+    textRect_beta = text_beta.get_rect()
+    textRect_beta.center = (425, 300)
+    SCREEN.blit(text_beta, textRect_beta)
     selected = False
     while True:
         if selected:
             break
-        chad_myra_button = pygame.Rect(500, 200, 50, 50)
-        beta_myra_button = pygame.Rect(500, 500, 50, 50)
+        chad_myra_button = pygame.Rect(800, 200, 50, 50)
+        beta_myra_button = pygame.Rect(400, 200, 50, 50)
         position_chad_myra = [8,8]
         position_beta_myra = [20,4]
         chad_myra_rect = pygame.Rect(position_chad_myra[1]*25, position_chad_myra[0]*25, blockSize, blockSize)
@@ -132,7 +151,7 @@ def menu(ants):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if chad_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu([[500, 200, 50], [500, 500, 50]])
+                        remove_menu([[800, 200, 50], [400, 200, 50]])
                         chad_myra = Ant(position_chad_myra, chad_myra_rect)
                         ants.append(chad_myra)
                         pygame.draw.rect(SCREEN, BLUE, (chad_myra_rect))
