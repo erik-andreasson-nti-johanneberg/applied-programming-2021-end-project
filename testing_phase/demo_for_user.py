@@ -1,4 +1,5 @@
 from turtle import position
+from numpy import block
 import pygame
 import sys
 import time
@@ -153,7 +154,7 @@ class Resources():
 
 #hq class
 class HQ():
-    def __init__(self, position=None, rect=None, pr_storage=None, level=1, hp=4, armor=2, color=ORANGE):
+    def __init__(self, position=None, rect=None, pr_storage=None, level=1, hp=4, armor=2, color=ORANGE, size=2):
         self.position = position
         self.rect = rect
         self.pr_storage = pr_storage
@@ -161,16 +162,18 @@ class HQ():
         self.hp = hp
         self.armor = armor
         self.color = color
+        self.size = size
 
 #barracks class
 class Barrack():
-    def __init__(self, position=None, rect=None, level=1, hp=4, armor=2, color=WHITE):
+    def __init__(self, position=None, rect=None, level=1, hp=4, armor=2, color=WHITE, size=2):
         self.position = position
         self.rect = rect
         self.level = level
         self.hp = hp
         self.armor = armor
         self.color = color
+        self.size = size
 
 #gold mine class
 class Gold_mine():
@@ -185,7 +188,7 @@ class Gold_mine():
 
 #copper mine class
 class Copper_mine():
-    def __init__(self, position=None, rect=None, tick=200, level=1, hp=4, armor=2, color=COPPER):
+    def __init__(self, position=None, rect=None, tick=200, level=1, hp=4, armor=2, color=COPPER, size=1):
         self.position = position
         self.rect = rect
         self.tick = tick
@@ -193,6 +196,7 @@ class Copper_mine():
         self.hp = hp
         self.armor = armor
         self.color = color
+        self.size = size
         
 
 class Wall():
@@ -203,7 +207,7 @@ class Wall():
         self.armor = armor
 
 class Turret():
-    def __init__(self, position=None, rect=None, hp=5, armor=2, range=4, attack=4, level=1):
+    def __init__(self, position=None, rect=None, hp=5, armor=2, range=4, attack=4, level=1, color=GOLD, size=1):
         self.position = position
         self.rect = rect
         self.hp = hp
@@ -211,6 +215,8 @@ class Turret():
         self.range = range
         self.attack = attack
         self.level = level
+        self.color = color
+        self.size = size
         
 
 # ai_turn placeholder, will be moved to a seperate file
@@ -229,7 +235,8 @@ def draw_text(text, font, text_color, background_color, surface, x, y):
     textrect.center = (x, y)
     surface.blit(textobj, textrect)
 
-def drawGrid(map, resources):
+#Draws the grid and resource bar
+def drawGrid(map, resources,message):
     blockSize = 25 #Set the size of the grid block
     for index_x, x in enumerate(range(0, WINDOW_WIDTH, blockSize)):
         for index_y, y in enumerate(range(0, WINDOW_HEIGHT, blockSize)):
@@ -241,17 +248,36 @@ def drawGrid(map, resources):
             else:
                 rect = pygame.Rect(x, y, blockSize, blockSize)
                 pygame.draw.rect(SCREEN, WHITE, rect, 1)
+    draw_info_bar(resources,message)
+
+def draw_info_bar(resources,message):
     info_bar = pygame.Rect(0,0, WINDOW_WIDTH, blockSize)
     pygame.draw.rect(SCREEN, BLUE, info_bar)
     draw_text('Gold: ' + str(resources.gold), info_bar_font, WHITE, BLUE, SCREEN, 50, blockSize/2)
     draw_text('Copper: ' + str(resources.copper), info_bar_font, WHITE, BLUE, SCREEN, 150, blockSize/2)
+    draw_text(message, info_bar_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH/2, blockSize/2)
+
+def draw_movement_func(ant,map):
+    print('we got here tho')
+    blockSize = 25 #Set the size of the grid block
+    for x in range((ant.position[1]-ant.movement)*blockSize, ant.position[1]*blockSize, blockSize):
+        for y in range((ant.position[0]-ant.movement)*blockSize, ant.position[0]*blockSize, blockSize):
+            if map[x/blockSize][y/blockSize] == 1:
+                rect = pygame.Rect(y, x, blockSize, blockSize)
+                rect2 = pygame.Rect(x, y, blockSize, blockSize)
+                pygame.draw.rect(SCREEN, BLUE, rect)
+                pygame.draw.rect(SCREEN, WHITE, rect2, 1)
+            else:
+                print('here as well')
+                rect = pygame.Rect(y, x, blockSize, blockSize)
+                pygame.draw.rect(SCREEN, RED, rect)
 
 #removes the menu from the screen and redraws all buildings and ants
 def remove_menu(ants, building_list):
     replace_with_black_rect = pygame.Rect(75, 75, 1100, 475)
     pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
     for building in building_list:
-        building_rect = pygame.Rect(building.position[0]*25, building.position[1]*25, 50, 50)
+        building_rect = pygame.Rect(building.position[1]*25, building.position[0]*25, building.size*25, building.size*25)
         pygame.draw.rect(SCREEN, building.color, building_rect)
     for ant in ants:
         ant_rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, blockSize, blockSize)
@@ -259,7 +285,7 @@ def remove_menu(ants, building_list):
     
 #Menus
 # barrack_menu    
-def menu(ants, buildings):
+def barrack_menu(building, ants, buildings):
     # Menu screen
     menu_rect = pygame.Rect(75, 75, 1100, 475)
     pygame.draw.rect(SCREEN, BLUE, (menu_rect))
@@ -274,8 +300,8 @@ def menu(ants, buildings):
             break
         chad_myra_button = pygame.Rect(800, 200, 50, 50)
         beta_myra_button = pygame.Rect(400, 200, 50, 50)
-        position_chad_myra = [8,8]
-        position_beta_myra = [20,4]
+        position_chad_myra = [building.position[0],building.position[1]+2]
+        position_beta_myra = [building.position[0],building.position[1]+2]
         chad_myra_rect = pygame.Rect(position_chad_myra[1]*25, position_chad_myra[0]*25, blockSize, blockSize)
         beta_myra_rect = pygame.Rect(position_beta_myra[1]*25, position_beta_myra[0]*25, blockSize, blockSize)
 
@@ -304,6 +330,140 @@ def menu(ants, buildings):
                         selected = True
                         break
         pygame.display.update()
+
+def hq_menu(building,ants,buildings):
+    # Menu screen
+    menu_rect = pygame.Rect(75, 75, 1100, 475)
+    pygame.draw.rect(SCREEN, BLUE, (menu_rect))
+    #Button text
+    #Builder myra
+    draw_text('Builder Myra', barrack_font, RED, BLACK, SCREEN, 825, 300)
+    #beta myra
+    draw_text('Queen Myra', barrack_font, RED, BLACK, SCREEN, 425, 300)
+    selected = False
+    while True:
+        if selected:
+            break
+        builder_myra_button = pygame.Rect(800, 200, 50, 50)
+        queen_myra_button = pygame.Rect(400, 200, 50, 50)
+        position_builder_myra = [building.position[0],building.position[1]+2]
+        position_queen_myra = [building.position[0],building.position[1]+2]
+        builder_myra_rect = pygame.Rect(position_builder_myra[1]*25, position_builder_myra[0]*25, blockSize, blockSize)
+        queen_myra_rect = pygame.Rect(position_queen_myra[1]*25, position_queen_myra[0]*25, blockSize, blockSize)
+
+        pygame.draw.rect(SCREEN, WHITE, (builder_myra_button))
+        pygame.draw.rect(SCREEN, WHITE, (queen_myra_button))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0]:  # Left mouse button.
+                    if builder_myra_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        builder_ant = Builder_ant(position_builder_myra, builder_myra_rect)
+                        ants.append(builder_ant)
+                        pygame.draw.rect(SCREEN, builder_ant.color, (builder_myra_rect))
+                        selected = True
+                        break
+                    if queen_myra_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
+                        ants.append(queen_ant)
+                        pygame.draw.rect(SCREEN, queen_ant.color, (queen_myra_rect))
+                        selected = True
+                        break
+        pygame.display.update()
+
+def builder_menu(builder,ants,buildings):
+    # Menu screen
+    ants.remove(builder)
+    builder_position = builder.position
+    menu_rect = pygame.Rect(75, 75, 1100, 475)
+    pygame.draw.rect(SCREEN, BLUE, (menu_rect))
+    #Button text
+    draw_text('Copper Mine', barrack_font, RED, BLACK, SCREEN, 825, 300)
+    draw_text('Turret', barrack_font, RED, BLACK, SCREEN, 425, 300)
+    draw_text('Barracks', barrack_font, RED, BLACK, SCREEN, 825, 500)
+    selected = False
+    while True:
+        if selected:
+            break
+        copper_mine_button = pygame.Rect(800, 200, 50, 50)
+        tower_button = pygame.Rect(400, 200, 50, 50)
+        barracks_button = pygame.Rect(800,400,50,50)
+
+        position_copper_mine = builder_position
+        position_tower = builder_position
+        position_barracks = builder_position
+
+        copper_mine_rect = pygame.Rect(position_copper_mine[1]*25, position_copper_mine[0]*25, blockSize, blockSize)
+        tower_rect = pygame.Rect(position_tower[1]*25, position_tower[0]*25, blockSize, blockSize)
+        barracks_rect = pygame.Rect(position_barracks[1]*25, position_barracks[0]*25, 50, 50)
+
+        pygame.draw.rect(SCREEN, WHITE, (copper_mine_button))
+        pygame.draw.rect(SCREEN, WHITE, (tower_button))
+        pygame.draw.rect(SCREEN, WHITE, (barracks_button))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0]:  # Left mouse button.
+                    if copper_mine_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        mine = Copper_mine(position_copper_mine, copper_mine_rect)
+                        buildings.append(mine)
+                        pygame.draw.rect(SCREEN, mine.color, (tower_rect))
+                        selected = True
+                        break
+                    if tower_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        turret = Turret(position_tower, tower_rect)
+                        buildings.append(turret)
+                        pygame.draw.rect(SCREEN, turret.color, (tower_rect))
+                        selected = True
+                        break
+                    if barracks_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        barrack = Barrack(position_barracks, barracks_rect)
+                        buildings.append(barrack)
+                        pygame.draw.rect(SCREEN, barrack.color, (barracks_rect))
+                        selected = True
+                        break
+        pygame.display.update()
+
+def tower_menu(building,ants,buildings):
+    # Menu screen
+    menu_rect = pygame.Rect(75, 75, 1100, 475)
+    pygame.draw.rect(SCREEN, BLUE, (menu_rect))
+    #Button text
+    draw_text('Level Up', barrack_font, RED, BLACK, SCREEN, 625, 462)
+    selected = False
+    while True:
+        if selected:
+            break
+        level_up_button = pygame.Rect(600, 362, 50, 50)
+        pygame.draw.rect(SCREEN, WHITE, (level_up_button))
+
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                mouse_presses = pygame.mouse.get_pressed()
+                if mouse_presses[0]:  # Left mouse button.
+                    if level_up_button.collidepoint((pygame.mouse.get_pos())):
+                        remove_menu(ants, buildings)
+                        building.level += 1
+                        selected = True
+                        break
+        pygame.display.update()
+
 # main menu
 def main_menu():
     SCREEN.fill((0,0,0))
@@ -357,6 +517,7 @@ def hq_():
     hq = HQ(position, hq)
     return hq
 
+#old
 def barrack_():
     position = [4,4]
     barrack = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
@@ -364,6 +525,7 @@ def barrack_():
     barrack = Barrack(position, barrack)
     return barrack
 
+#old
 def gold_mine_():
     position = [10,10]
     gold_mine = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
@@ -371,6 +533,7 @@ def gold_mine_():
     gold_mine = Gold_mine(position, gold_mine, 100)
     return gold_mine
 
+#old
 def copper_mine_():
     position = [10,15]
     copper_mine = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
@@ -389,6 +552,7 @@ def drawant(cord, color): #draws a red rectangle for the ant
     ant = pygame.Rect(cord[1], cord[0], antsize, antsize)
     pygame.draw.rect(SCREEN, color, ant)
 
+# rewrites a-star path to a path compatible with the grid
 def gridpath(path):
     grid_path = []
     for cord in path:
@@ -409,14 +573,18 @@ def main():
     hq = hq_()
     ant_already_clicked = False
     next_turn = False
+    draw_movement = False
     ants = []
     buildings = [hq]
     gold_buildings = []
     resources = Resources(500, 1000)
+    message = None
     while True:
-        drawGrid(map, resources)
+        drawGrid(map, resources, message)
         pygame.draw.rect(SCREEN, GREEN, turn_button)
         draw_text('Next turn', next_turn_font, BLACK, GREEN, SCREEN, WINDOW_WIDTH-50, WINDOW_HEIGHT-25)
+        if draw_movement:
+            draw_movement_func(current_ant,map)
         for event in pygame.event.get():
             if next_turn:
                 ai_turn(resources, gold_buildings)
@@ -432,10 +600,23 @@ def main():
                     if turn_button.collidepoint((pygame.mouse.get_pos())):
                         next_turn = True
                         continue
+
+                    for building in buildings:
+                        if building.rect.collidepoint((pygame.mouse.get_pos())):
+                            if building.color == ORANGE:
+                                hq_menu(building,ants,buildings)
+                                break
+                            if building.color == GOLD:
+                                tower_menu(building,ants,buildings)
+                                break
+                            if building.color == WHITE:
+                                barrack_menu(building,ants,buildings)
+                                break
                     
                     # if barrack.rect.collidepoint((pygame.mouse.get_pos())):
                     #     menu(ants, buildings)
                     if ant_already_clicked:
+                        draw_movement = False
                         prev_cord = [-25,-25]
                         ant_already_clicked = False
                         mouse_position = pygame.mouse.get_pos()
@@ -443,8 +624,21 @@ def main():
                         column, r1 = divmod(mouse_position[0],25)
                         row, r2 = divmod(mouse_position[1],25)
                         end = (row, column)
-                        # print(end)
                         print(current_ant.position)
+                        print(end)
+                        print('')
+                        print(current_ant.position[0])
+                        print(current_ant.position[1])
+                        print('')
+                        print(column-current_ant.position[1])
+                        print(row-current_ant.position[0])
+                        print('')
+                        print(current_ant.movement)
+                        if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
+                            message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
+                            ants.append(current_ant)
+                            continue
+
                         path = astar(current_ant.position,end,map)
                         # print(path)
                         grid_path = gridpath(path)
@@ -452,7 +646,7 @@ def main():
 
                         for cord in grid_path:
                             print(cord)
-                            drawGrid(map, resources)
+                            drawGrid(map, resources, message)
                             time.sleep(0.5)
                             removeant(prev_cord)
                             prev_cord = cord
@@ -461,12 +655,12 @@ def main():
                         ant = pygame.Rect(end[1]*25, end[0]*25, blockSize, blockSize)
                         current_ant.rect = ant
                         current_ant.position = end
-                        # print(current_ant.rect)
-                        # print(current_ant.position)
-                        # print(ants)
-                        # print('')
+                        print(current_ant.rect)
+                        print(current_ant.position)
+                        print(ants)
+                        print('')
                         ants.append(current_ant)
-                        # print(ants)
+                        print(ants)
 
                         continue
         
@@ -474,9 +668,17 @@ def main():
                         for ant in ants:
                             if ant.rect.collidepoint(pygame.mouse.get_pos()):
                                 print("Mouse clicked on the ant")
+                                draw_movement = True
                                 current_ant = ant
                                 ants.remove(ant)
                                 ant_already_clicked = True
+                                break
+                if mouse_presses[2]: #right mouse button
+                    for ant in ants:
+                        if ant.rect.collidepoint(pygame.mouse.get_pos()):
+                            print("Mouse right clicked on the ant")
+                            if ant.color == VIOLET:
+                                builder_menu(ant,ants,buildings)
                                 break
         pygame.display.update()
 
