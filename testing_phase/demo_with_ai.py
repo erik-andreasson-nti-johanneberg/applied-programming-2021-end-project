@@ -1,3 +1,4 @@
+from distutils.command.build import build
 from importlib import resources
 from turtle import position
 from numpy import block
@@ -75,7 +76,7 @@ class Ant():
 
 #builder ant
 class Builder_ant():
-    def __init__(self, position=None, rect=None, movement=2, hp=1, range=0, attack=0, color=VIOLET, actions=2):
+    def __init__(self, position=None, rect=None, movement=2, hp=1, range=0, attack=0, color=VIOLET, actions=2, price=[100,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -84,10 +85,11 @@ class Builder_ant():
         self.attack = attack
         self.color = color
         self.actions = actions
+        self.price = price
 
 #beta ant
 class Beta_ant():
-    def __init__(self, position=None, rect=None, movement=5, hp=10, range=1, attack=5, color=RED, actions=1):
+    def __init__(self, position=None, rect=None, movement=5, hp=10, range=1, attack=5, color=RED, actions=1, price=[150,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -96,10 +98,11 @@ class Beta_ant():
         self.attack = attack
         self.color = color
         self.actions = actions
+        self.price = price
 
 #chad ant
 class Chad_ant():
-    def __init__(self, position=None, rect=None, movement=9, hp=5, range=1, attack=6, color=MAGENTA, actions=1):
+    def __init__(self, position=None, rect=None, movement=9, hp=5, range=1, attack=6, color=MAGENTA, actions=1, price=[100,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -108,10 +111,11 @@ class Chad_ant():
         self.attack = attack
         self.color = color
         self.actions = actions
+        self.price = price
 
 #sigma ant
 class Sigma_ant():
-    def __init__(self, position=None, rect=None, movement=7, hp=3, range=4, attack=4, color=BROWN, actions=1):
+    def __init__(self, position=None, rect=None, movement=7, hp=3, range=4, attack=4, color=BROWN, actions=1, price=[0,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -123,7 +127,7 @@ class Sigma_ant():
 
 #queen ant
 class Queen_ant():
-    def __init__(self, position=None, rect=None, movement=15, hp=20, range=2, attack=12, color=GREEN, actions=1):
+    def __init__(self, position=None, rect=None, movement=15, hp=20, range=2, attack=12, color=GREEN, actions=1, price=[1000,500]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -132,6 +136,7 @@ class Queen_ant():
         self.attack = attack
         self.color = color
         self.actions = actions
+        self.price = price
 
 #resources class
 class Resources():
@@ -159,7 +164,7 @@ class HQ():
 
 #barracks class #builds 4 times max in a turn
 class Barrack():
-    def __init__(self, position=None, rect=None, level=1, hp=4, armor=2, color=WHITE, size=2, actions=4):
+    def __init__(self, position=None, rect=None, level=1, hp=4, armor=2, color=WHITE, size=2, actions=4, price=[300,100]):
         self.position = position
         self.rect = rect
         self.level = level
@@ -168,6 +173,7 @@ class Barrack():
         self.color = color
         self.size = size
         self.actions = actions
+        self.price = price
 
 #gold mine class #Archived
 class Gold_mine():
@@ -182,7 +188,7 @@ class Gold_mine():
 
 #copper mine class 
 class Copper_mine():
-    def __init__(self, position=None, rect=None, tick=200, level=1, hp=4, armor=2, color=COPPER, size=1):
+    def __init__(self, position=None, rect=None, tick=200, level=1, hp=4, armor=2, color=COPPER, size=1, price=[500,100]):
         self.position = position
         self.rect = rect
         self.tick = tick
@@ -191,6 +197,7 @@ class Copper_mine():
         self.armor = armor
         self.color = color
         self.size = size
+        self.price = price
         
 
 class Wall():
@@ -201,7 +208,7 @@ class Wall():
         self.armor = armor
 
 class Turret():
-    def __init__(self, position=None, rect=None, hp=5, armor=2, range=4, attack=4, level=1, color=GOLD, size=1, actions=1):
+    def __init__(self, position=None, rect=None, hp=5, armor=2, range=4, attack=4, level=1, color=GOLD, size=1, actions=1, price=[200,50]):
         self.position = position
         self.rect = rect
         self.hp = hp
@@ -212,12 +219,13 @@ class Turret():
         self.color = color
         self.size = size
         self.actions = actions
+        self.price = price
 
 #checks if resources are available for a purchase and in that case deducts them from the balance
-def purchase(resources,price):
-    if resources.copper >= price[0] and resources.gold >= price[1]:
-        resources.copper -= price[0]
-        resources.gold -= price[1]
+def purchase(resources,ant):
+    if resources.copper >= ant.price[0] and resources.gold >= ant.price[1]:
+        resources.copper -= ant.price[0]
+        resources.gold -= ant.price[1]
         return True
     else:
         return False
@@ -365,9 +373,9 @@ def barrack_menu(building, ants, buildings,resources):
                         selected = True
                         break
                     if chad_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources, [100,0]):
+                        chad_myra = Chad_ant(position_chad_myra, chad_myra_rect)
+                        if purchase(resources, chad_myra):
                             remove_menu(ants, buildings)
-                            chad_myra = Chad_ant(position_chad_myra, chad_myra_rect)
                             ants.append(chad_myra)
                             pygame.draw.rect(SCREEN, MAGENTA, (chad_myra_rect))
                             selected = True
@@ -375,9 +383,9 @@ def barrack_menu(building, ants, buildings,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
                     if beta_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources, [150,0]):
+                        beta_myra = Beta_ant(position_beta_myra, beta_myra_rect)
+                        if purchase(resources, beta_myra):
                             remove_menu(ants, buildings)
-                            beta_myra = Beta_ant(position_beta_myra, beta_myra_rect)
                             ants.append(beta_myra)
                             pygame.draw.rect(SCREEN, RED, (beta_myra_rect))
                             selected = True
@@ -423,9 +431,9 @@ def hq_menu(building,ants,buildings,resources):
                         selected = True
                         break
                     if builder_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources, [100,0]):
+                        builder_ant = Builder_ant(position_builder_myra, builder_myra_rect)
+                        if purchase(resources, builder_ant):
                             remove_menu(ants, buildings)
-                            builder_ant = Builder_ant(position_builder_myra, builder_myra_rect)
                             ants.append(builder_ant)
                             pygame.draw.rect(SCREEN, builder_ant.color, (builder_myra_rect))
                             selected = True
@@ -433,9 +441,9 @@ def hq_menu(building,ants,buildings,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
                     if queen_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources,[1000,500]):
+                        queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
+                        if purchase(resources,queen_ant):
                             remove_menu(ants, buildings)
-                            queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
                             ants.append(queen_ant)
                             pygame.draw.rect(SCREEN, queen_ant.color, (queen_myra_rect))
                             selected = True
@@ -488,10 +496,10 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         selected = True
                         break
                     if copper_mine_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources, [500,100]):
+                        mine = Copper_mine(position_copper_mine, copper_mine_rect)
+                        if purchase(resources, mine):
                             ants.remove(builder)
                             remove_menu(ants, buildings)
-                            mine = Copper_mine(position_copper_mine, copper_mine_rect)
                             place_walls(builder_position,mine.size)
                             buildings.append(mine)
                             mines.append(mine)
@@ -501,10 +509,10 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
                     if tower_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources,[200,50]):
+                        turret = Turret(position_tower, tower_rect)
+                        if purchase(resources,turret):
                             ants.remove(builder)
                             remove_menu(ants, buildings)
-                            turret = Turret(position_tower, tower_rect)
                             place_walls(builder_position,turret.size)
                             buildings.append(turret)
                             pygame.draw.rect(SCREEN, turret.color, (tower_rect))
@@ -513,10 +521,10 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
                     if barracks_button.collidepoint((pygame.mouse.get_pos())):
-                        if purchase(resources,[300,100]):
+                        barrack = Barrack(position_barracks, barracks_rect)
+                        if purchase(resources,barrack):
                             ants.remove(builder)
                             remove_menu(ants, buildings)
-                            barrack = Barrack(position_barracks, barracks_rect)
                             place_walls(builder_position,barrack.size)
                             buildings.append(barrack)
                             pygame.draw.rect(SCREEN, barrack.color, (barracks_rect))
@@ -678,6 +686,34 @@ def gridpath(path):
         grid_path.append(new_cord)
     return grid_path
 
+def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map):
+    print(num_turns)
+    purchased_ants = []
+    purchased_buildings = []
+    if num_turns < 1:
+        purchased_buildings.append(Barrack())
+        purchased_buildings.append(Copper_mine())
+        for i in purchased_buildings:
+            purchased_ants.append(Builder_ant())
+    for building in purchased_buildings:
+        if building.size < 2 and building.color == COPPER:
+            ai_resources.gold -= building.price[1]
+            ai_resources.copper -= building.price[0]
+            for row in range(1,25):
+                if map[row][49] == 0:
+                    building.position = [row,49]
+                    map[row][49] = 1
+                    building.rect = pygame.Rect(49*25, row*25, 25, 25)
+                    ai.buildings.append(building)
+                    break
+    for ant in purchased_ants:
+        if ant.color == VIOLET:
+            ai_resources.copper -= ant.price[0]
+    print(ai_resources.copper)
+    print(ai_resources.gold)
+
+        
+
 def main():
     global SCREEN, CLOCK
     SCREEN.fill(BLACK)
@@ -693,6 +729,7 @@ def main():
     resources = Resources(500, 1000)
     ai_resources = AI_resources()
     ai = AI([], [ai_hq])
+    num_turns = 0
     message = None
     fought = False
     while True:
@@ -716,6 +753,9 @@ def main():
                     if building.color == GOLD:
                         building.actions = 1
                 ai_turn(resources, mines)
+                ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map)
+                print(ai.buildings)
+                num_turns += 1
                 next_turn = False
                 break
             if event.type == pygame.QUIT:
