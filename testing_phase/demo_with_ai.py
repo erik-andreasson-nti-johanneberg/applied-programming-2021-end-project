@@ -1,4 +1,5 @@
 from distutils.command.build import build
+from enum import EnumMeta
 from importlib import resources
 from turtle import position
 from numpy import block
@@ -6,6 +7,7 @@ import pygame
 import sys
 import time
 from functional.a_star_pure import astar
+from testing_phase.ai_astar import ai_astar
 import random
 pygame.init()
 
@@ -64,9 +66,11 @@ stat_font = pygame.font.Font('freesansbold.ttf', 5)
 
 #ai_game_state
 class AI():
-    def __init__(self, ants=[], buildings=[]):
+    def __init__(self, ants=[], buildings=[], mines=[], barracks=[]):
         self.ants = ants
         self.buildings = buildings
+        self.mines = mines
+        self.barracks = barracks
 
 #ant class
 class Ant():
@@ -231,7 +235,20 @@ def purchase(resources,ant):
         return False
 
 #combat between two ants
-def combat(attacking,defending,ants,resources,ai_resources):
+def combat(attacking,defending,ants,resources,ai_resources,ai):
+    bonus = random.randint(-2,2)
+    defending.hp = defending.hp - (attacking.attack + bonus)
+    attacking.hp = attacking.hp - (defending.attack/2)
+    if defending.hp <= 0:
+        ai.ants.remove(defending)
+        map[defending.position[0]][defending.position[1]] = 0 #removes wall on ant
+        resources.gold += 25
+    if attacking.hp <= 0:
+        ants.remove(attacking)
+        map[attacking.position[0]][attacking.position[1]] = 0 #removes wall on ant
+        ai_resources.gold += 25
+
+def ai_combat(attacking,defending,ants,resources,ai_resources,ai):
     bonus = random.randint(-2,2)
     defending.hp = defending.hp - (attacking.attack + bonus)
     attacking.hp = attacking.hp - (defending.attack/2)
@@ -240,7 +257,7 @@ def combat(attacking,defending,ants,resources,ai_resources):
         map[defending.position[0]][defending.position[1]] = 0 #removes wall on ant
         resources.gold += 25
     if attacking.hp <= 0:
-        ants.remove(attacking)
+        ai.ants.remove(attacking)
         map[attacking.position[0]][attacking.position[1]] = 0 #removes wall on ant
         ai_resources.gold += 25
 
@@ -289,6 +306,9 @@ def drawGrid(map, resources,message,buildings,ants,ai):
                 pygame.draw.rect(SCREEN, WHITE, rect, 1)
     for building in buildings_to_draw:
         pygame.draw.rect(SCREEN,building.color,building.rect)
+    for ant in ai.ants:
+        pygame.draw.rect(SCREEN, ant.color, ant.rect)
+        pygame.draw.rect(SCREEN, RED, pygame.Rect(ant.position[1]*25, ant.position[0]*25, 8,8))
     for ant in ants:
         pygame.draw.rect(SCREEN,ant.color,ant.rect)
     draw_info_bar(resources,message)
@@ -315,7 +335,7 @@ def draw_movement_func(ant,map):
     pygame.draw.rect(SCREEN,ant.color,ant.rect)
 
 #removes the menu from the screen and redraws all buildings and ants
-def remove_menu(ants, building_list):
+def remove_menu(ants, building_list,ai):
     replace_with_black_rect = pygame.Rect(0, 0, WINDOW_WIDTH, WINDOW_HEIGHT)
     pygame.draw.rect(SCREEN, BLACK, replace_with_black_rect)
     for building in building_list:
@@ -324,7 +344,12 @@ def remove_menu(ants, building_list):
     for ant in ants:
         ant_rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, blockSize, blockSize)
         pygame.draw.rect(SCREEN, ant.color, ant_rect)
-    
+    for ant in ai.ants:
+        ant_rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, blockSize, blockSize)
+        pygame.draw.rect(SCREEN, ant.color, ant_rect)
+    for building in ai.buildings:
+        building_rect = pygame.Rect(building.position[1]*25, building.position[0]*25, building.size*25, building.size*25)
+        pygame.draw.rect(SCREEN, building.color, building_rect)
 #Menus
 
 #stat menu
@@ -369,13 +394,13 @@ def barrack_menu(building, ants, buildings,resources):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if exit_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings)
+                        remove_menu(ants,buildings,ai)
                         selected = True
                         break
                     if chad_myra_button.collidepoint((pygame.mouse.get_pos())):
                         chad_myra = Chad_ant(position_chad_myra, chad_myra_rect)
                         if purchase(resources, chad_myra):
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             ants.append(chad_myra)
                             pygame.draw.rect(SCREEN, MAGENTA, (chad_myra_rect))
                             selected = True
@@ -385,7 +410,7 @@ def barrack_menu(building, ants, buildings,resources):
                     if beta_myra_button.collidepoint((pygame.mouse.get_pos())):
                         beta_myra = Beta_ant(position_beta_myra, beta_myra_rect)
                         if purchase(resources, beta_myra):
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             ants.append(beta_myra)
                             pygame.draw.rect(SCREEN, RED, (beta_myra_rect))
                             selected = True
@@ -427,13 +452,13 @@ def hq_menu(building,ants,buildings,resources):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if exit_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings)
+                        remove_menu(ants,buildings,ai)
                         selected = True
                         break
                     if builder_myra_button.collidepoint((pygame.mouse.get_pos())):
                         builder_ant = Builder_ant(position_builder_myra, builder_myra_rect)
                         if purchase(resources, builder_ant):
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             ants.append(builder_ant)
                             pygame.draw.rect(SCREEN, builder_ant.color, (builder_myra_rect))
                             selected = True
@@ -443,7 +468,7 @@ def hq_menu(building,ants,buildings,resources):
                     if queen_myra_button.collidepoint((pygame.mouse.get_pos())):
                         queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
                         if purchase(resources,queen_ant):
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             ants.append(queen_ant)
                             pygame.draw.rect(SCREEN, queen_ant.color, (queen_myra_rect))
                             selected = True
@@ -492,14 +517,14 @@ def builder_menu(builder,ants,buildings,mines,resources):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if exit_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings)
+                        remove_menu(ants,buildings,ai)
                         selected = True
                         break
                     if copper_mine_button.collidepoint((pygame.mouse.get_pos())):
                         mine = Copper_mine(position_copper_mine, copper_mine_rect)
                         if purchase(resources, mine):
                             ants.remove(builder)
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             place_walls(builder_position,mine.size)
                             buildings.append(mine)
                             mines.append(mine)
@@ -512,7 +537,7 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         turret = Turret(position_tower, tower_rect)
                         if purchase(resources,turret):
                             ants.remove(builder)
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             place_walls(builder_position,turret.size)
                             buildings.append(turret)
                             pygame.draw.rect(SCREEN, turret.color, (tower_rect))
@@ -524,7 +549,7 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         barrack = Barrack(position_barracks, barracks_rect)
                         if purchase(resources,barrack):
                             ants.remove(builder)
-                            remove_menu(ants, buildings)
+                            remove_menu(ants,buildings,ai)
                             place_walls(builder_position,barrack.size)
                             buildings.append(barrack)
                             pygame.draw.rect(SCREEN, barrack.color, (barracks_rect))
@@ -557,11 +582,11 @@ def tower_menu(building,ants,buildings):
                 mouse_presses = pygame.mouse.get_pressed()
                 if mouse_presses[0]:  # Left mouse button.
                     if exit_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings)
+                        remove_menu(ants,buildings,ai)
                         selected = True
                         break
                     if level_up_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants, buildings)
+                        remove_menu(ants,buildings,ai)
                         building.level += 1
                         selected = True
                         break
@@ -686,35 +711,167 @@ def gridpath(path):
         grid_path.append(new_cord)
     return grid_path
 
-def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map):
+def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
+    #create 'attack' groups where after buildign a group it moves towards the base while a new group assembles, moves every three turns
+    print('num turns')
+    print(ants)
     print(num_turns)
+    for mine in ai.mines:
+        ai_resources.copper += mine.tick
     purchased_ants = []
     purchased_buildings = []
     if num_turns < 1:
         purchased_buildings.append(Barrack())
         purchased_buildings.append(Copper_mine())
         for i in purchased_buildings:
-            purchased_ants.append(Builder_ant())
+            purchased_ants.append([Builder_ant(),0])
     for building in purchased_buildings:
-        if building.size < 2 and building.color == COPPER:
-            ai_resources.gold -= building.price[1]
-            ai_resources.copper -= building.price[0]
-            for row in range(1,25):
-                if map[row][49] == 0:
-                    building.position = [row,49]
-                    map[row][49] = 1
-                    building.rect = pygame.Rect(49*25, row*25, 25, 25)
-                    ai.buildings.append(building)
+        if building.color == COPPER:
+            if ai_resources.gold >= building.price[1] and ai_resources.copper >= building.price[0]:
+                ai_resources.gold -= building.price[1]
+                ai_resources.copper -= building.price[0]
+                for row in range(1,25):
+                    if map[row][49] == 0:
+                        building.position = [row,49]
+                        map[row][49] = 1
+                        building.rect = pygame.Rect(49*25, row*25, 25, 25)
+                        ai.buildings.append(building)
+                        ai.mines.append(building)
+                        break
+            else:
+                purchased_ants.pop()
+        if building.color == WHITE:
+            if ai_resources.gold >= building.price[1] and ai_resources.copper >= building.price[0]:
+                ai_resources.gold -= building.price[1]
+                ai_resources.copper -= building.price[0]
+                for row in range(1,25):
+                    if map[row][47] == 0:
+                        building.position = [row,47]
+                        map[row][47] = 1
+                        map[row][48] = 1
+                        map[row+1][47] = 1
+                        map[row+1][48] = 1
+                        building.rect = pygame.Rect(47*25, row*25, 50, 50)
+                        ai.buildings.append(building)
+                        ai.barracks.append(building)
+                        break
+            else:
+                purchased_ants.pop()
+
+    # decides which ants should be purchased based on turn and number of enemy ants
+    if num_turns % 3 != 0:
+        if len(ants) > 2:
+            temp_ants = ants.copy()
+            for i, ant in enumerate(temp_ants):
+                if i > (len(temp_ants)/2):
                     break
+                temp_ants.append(ant)
+            for barrack in ai.barracks:
+                for action, ant in enumerate(temp_ants):
+                    if action > 3:
+                        break
+                    if ant.color == RED:
+                        purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                        temp_ants.remove(ant)
+                    if ant.color == MAGENTA:
+                        purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                        temp_ants.remove(ant)  
+    print('before movement and purchase')
+    print(ants)
+    # moves each purchased ant to the rendevous
     for ant in purchased_ants:
-        if ant.color == VIOLET:
-            ai_resources.copper -= ant.price[0]
+        print('')
+        print(ai_resources.copper)
+        print(ai_resources.gold)
+        print(ant[0].price[0])
+        if ant[0].color == VIOLET:
+            ai_resources.copper -= ant[0].price[0]
+        if ant[0].color == RED:
+            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
+                for row in range(2,12):
+                    if map[row][ant[1][1] - ant[0].movement] == 0:
+                        if ai_astar(ant[1],(row,ant[1][1] - ant[0].movement),map):
+                            ant[0].position = [row,ant[1][1] - ant[0].movement]
+                            map[row][ant[1][1] - ant[0].movement] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                            ai.ants.append(ant[0])
+                            break
+                ai_resources.copper -= ant[0].price[0]
+        if ant[0].color == MAGENTA:
+            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
+                for row in range(2,12):
+                    if map[row][ant[1][1] - ant[0].movement] == 0:
+                        if ai_astar(ant[1],(row, ant[1][1] - ant[0].movement),map):
+                            ant[0].position = [row,ant[1][1] - ant[0].movement]
+                            map[row][ant[1][1] - ant[0].movement] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                            ai.ants.append(ant[0])
+                            break
+                ai_resources.copper -= ant[0].price[0]
+    print('this spor')
+    print(ants)
+    nothing_in_range = True
+    if num_turns % 3 == 0: # checks if an enemy or building is in range, if true attacks
+        for ai_ant in ai.ants:
+            for player_ant in ants:
+                print('positions')
+                print('row')
+                print(abs(player_ant.position[0] - ai_ant.position[0]))
+                print(ai_ant.movement)
+                print('column')
+                print(abs(player_ant.position[1] - ai_ant.position[1]))
+                print(ai_ant.movement)
+                if abs(player_ant.position[0] - ai_ant.position[0]) <= ai_ant.movement and abs(player_ant.position[1] - ai_ant.position[1]) <= ai_ant.movement:
+                    if player_ant.position[1] > ai_ant.position[1]:
+                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                        ai_ant.position = [player_ant.position[0], player_ant.position[1]-1]
+                        ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                        map[ai_ant.position[0]][ai_ant.position[1]] = 1
+                    else:
+                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                        ai_ant.position = [player_ant.position[0], player_ant.position[1]+1]
+                        ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                    print(ants)
+                    ai_combat(ai_ant, player_ant, ants, resources, ai_resources,ai)
+                    remove_menu(ants,buildings,ai)
+                    nothing_in_range = False
+                    break
+        if nothing_in_range: # if nothing in range moves to the left towards the hq
+            for ant in ai.ants:
+                removeant([ant.position[0]*25, ant.position[1]*25])
+                map[ant.position[0]][ant.position[1]] = 0
+                ant.position = [ant.position[0], ant.position[1] - ant.movement]
+                ant.rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, 25, 25)
+                map[ant.position[0]][ant.position[1]] = 1
+
+    # if num_turns % 3 == 0:
+    #     for count, ant in enumerate(ai.ants):
+    #         if ai_astar(ant.position, (12,3), map):
+    #             if ant.position[0] != 12 and ant.position[0] < 12:
+    #                 if 12 - ant.position[0] >= ant.movement:
+    #                     ant.position = [ant.position[0] + ant.movement + count, 36]
+    #                 else:
+    #                     ant.position = [ant.position[0] + (12 - ant.position[0]) + count, 36]
+    #             elif ant.position[0] != 12 and ant.position[0] > 12:
+    #                 if ant.position[0] - 12 >= ant.movement:
+    #                     ant.position = [ant.position[0] - ant.movement + count, 36]
+    #                 else:
+    #                     ant.position = [ant.position[0] - (ant.position[0] - 12) + count, 36]
+
+
+    
+    print('ai_resources')
     print(ai_resources.copper)
     print(ai_resources.gold)
+    print('')
+    print(ai.ants)
+    print('')
 
         
 
 def main():
+    # currently testing if ai will build and place ants based on num and type of player ants
     global SCREEN, CLOCK
     SCREEN.fill(BLACK)
     turn_button = pygame.Rect(WINDOW_WIDTH-100, WINDOW_HEIGHT-50, 100, 50)
@@ -723,17 +880,19 @@ def main():
     ant_already_clicked = False
     next_turn = False
     draw_movement = False
-    ants = []
+    ants = [Chad_ant([2,43],pygame.Rect(43*25, 2*25, 25, 25)), Chad_ant([3,43],pygame.Rect(43*25, 3*25, 25, 25)), Chad_ant([4,43],pygame.Rect(43*25, 4*25, 25, 25))]
     buildings = [hq]
     mines = []
     resources = Resources(500, 1000)
     ai_resources = AI_resources()
+    global ai
     ai = AI([], [ai_hq])
     num_turns = 0
     message = None
     fought = False
     while True:
         drawGrid(map, resources, message, buildings, ants, ai)
+        print(ants)
         pygame.draw.rect(SCREEN, GREEN, turn_button)
         draw_text('Next turn', next_turn_font, BLACK, GREEN, SCREEN, WINDOW_WIDTH-50, WINDOW_HEIGHT-25)
         if draw_movement:
@@ -753,8 +912,9 @@ def main():
                     if building.color == GOLD:
                         building.actions = 1
                 ai_turn(resources, mines)
-                ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map)
-                print(ai.buildings)
+                print('look here!')
+                print(ants)
+                ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources)
                 num_turns += 1
                 next_turn = False
                 break
@@ -763,7 +923,11 @@ def main():
                 sys.exit()
             for ant in ants:
                 if ant.rect.collidepoint((pygame.mouse.get_pos())):
-                    message = 'HP: {} Attack: {} Ant has {} actions left'.format(ant.hp, ant.attack, ant.actions)
+                    message = 'Friendly HP: {} Attack: {} Ant has {} actions left'.format(ant.hp, ant.attack, ant.actions)
+                    draw_info_bar(resources, message)
+            for ant in ai.ants:
+                if ant.rect.collidepoint((pygame.mouse.get_pos())):
+                    message = 'Enemy HP: {} Attack: {} Ant has {} actions left'.format(ant.hp, ant.attack, ant.actions)
                     draw_info_bar(resources, message)
             for building in buildings:
                 if building.rect.collidepoint((pygame.mouse.get_pos())):
@@ -800,7 +964,7 @@ def main():
                     if ant_already_clicked:
                         for defending in ai.ants:
                             if defending.rect.collidepoint((pygame.mouse.get_pos())):
-                                remove_menu(ants,buildings)
+                                remove_menu(ants,buildings,ai)
                                 draw_movement = False
                                 prev_cord = [-25,-25]
                                 ant_already_clicked = False
@@ -813,7 +977,7 @@ def main():
                                 if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
                                     message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
                                     ants.append(current_ant)
-                                    remove_menu(ants,buildings)
+                                    remove_menu(ants,buildings,ai)
                                     continue
 
                                 path = astar(current_ant.position,end,map)
@@ -823,7 +987,7 @@ def main():
 
                                 for cord in grid_path:
                                     drawGrid(map, resources, message, buildings,ants,ai)
-                                    time.sleep(0.5)
+                                    time.sleep(0.2)
                                     removeant(prev_cord)
                                     prev_cord = cord
                                     drawant(cord, current_ant.color)
@@ -835,14 +999,14 @@ def main():
                                 map[end[0]][end[1]] = 1 #creates wall under ant
 
                                 combat(current_ant,defending,ants,resources,ai_resources)
-                                remove_menu(ants,buildings)
+                                remove_menu(ants,buildings,ai)
 
                                 fought = True
                         print(fought)
                         if fought:
                             continue
 
-                        remove_menu(ants,buildings)
+                        remove_menu(ants,buildings,ai)
                         fought = False
                         draw_movement = False
                         prev_cord = [-25,-25]
@@ -856,9 +1020,11 @@ def main():
                         if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
                             message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
                             ants.append(current_ant)
-                            remove_menu(ants,buildings)
+                            remove_menu(ants,buildings,ai)
                             continue
-
+                        print('positions')
+                        print(current_ant.position)
+                        print(end)
                         path = astar(current_ant.position,end,map)
                         # print(path)
                         grid_path = gridpath(path)
@@ -874,6 +1040,7 @@ def main():
                         ant = pygame.Rect(end[1]*25, end[0]*25, blockSize, blockSize)
                         current_ant.rect = ant
                         current_ant.position = end
+                        print(end)
                         ants.append(current_ant)
                         map[end[0]][end[1]] = 1 #creates wall under ant
 
