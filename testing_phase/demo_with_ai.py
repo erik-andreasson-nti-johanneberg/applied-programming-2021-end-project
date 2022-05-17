@@ -2,6 +2,7 @@ from distutils.command.build import build
 from enum import EnumMeta
 from importlib import resources
 from turtle import position
+from matplotlib.style import available
 from numpy import block
 import pygame
 import sys
@@ -66,11 +67,13 @@ stat_font = pygame.font.Font('freesansbold.ttf', 5)
 
 #ai_game_state
 class AI():
-    def __init__(self, ants=[], buildings=[], mines=[], barracks=[]):
+    def __init__(self, ants=[], buildings=[], mines=[], barracks=[], attack_groups=[], new_group=[]):
         self.ants = ants
         self.buildings = buildings
         self.mines = mines
         self.barracks = barracks
+        self.attack_groups = attack_groups
+        self.new_group = new_group
 
 #ant class
 class Ant():
@@ -701,8 +704,6 @@ def drawant(cord, color): #draws a red rectangle for the ant
 def gridpath(path):
     grid_path = []
     for cord in path:
-        # print('cord in gridpath:')
-        # print(cord)
         new_cord = []
         x = 25*cord[0]
         y = 25*cord[1]
@@ -712,19 +713,100 @@ def gridpath(path):
     return grid_path
 
 def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
-    #create 'attack' groups where after buildign a group it moves towards the base while a new group assembles, moves every three turns
+    # Implement destruction of buildings and the basic playable ai should be finished. Need turret functionality for player and perhaps other improvements for the ai
     print('num turns')
-    print(ants)
     print(num_turns)
     for mine in ai.mines:
+        print(mine.tick)
         ai_resources.copper += mine.tick
     purchased_ants = []
     purchased_buildings = []
     if num_turns < 1:
         purchased_buildings.append(Barrack())
         purchased_buildings.append(Copper_mine())
-        for i in purchased_buildings:
-            purchased_ants.append([Builder_ant(),0])
+    
+    # decides which ants should be purchased based on turn and number of enemy ants
+    if num_turns % 3 != 0:
+        if len(ants) > 0:
+            threats = 0
+            for ant in ants:
+                if ant.position[1] >= 25:
+                    threats += 1
+            if ai_resources.gold > 0:
+                print('we rich')
+            else:
+                print('poor')
+            if threats > 0 or ai_resources.gold == 0:
+                temp_ants = ants.copy()
+                for i, ant in enumerate(temp_ants):
+                    if i > (len(temp_ants)/2):
+                        break
+                    temp_ants.append(ant)
+                for barrack in ai.barracks:
+                    for action, ant in enumerate(temp_ants):
+                        decider = random.randint(1,12)
+                        print(decider)
+                        if action > 3:
+                            break
+                        if decider >= 9:
+                            purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                            temp_ants.remove(ant)
+                        else:
+                            purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                            temp_ants.remove(ant)
+            else:
+                if len(ai.barracks) >= len(ai.mines) and len(ai.barracks) != 0:
+                    purchased_buildings.append(Copper_mine())
+                elif len(ai.barracks) < len(ai.mines) and len(ai.mines) != 0:
+                    purchased_buildings.append(Barrack())
+                elif len(ai.barracks) == 0:
+                    purchased_buildings.append(Barrack())
+                else:
+                    purchased_buildings.append(Copper_mine())          
+        else:
+            for barrack in ai.barracks:
+                bug_fix_list = [0,1,2,3]
+                for action, ant in enumerate(bug_fix_list):
+                    decider = random.randint(1,12)
+                    if action > 3:
+                        break
+                    if decider >= 9:
+                        purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                    else:
+                        purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+    
+    # moves each purchased ant to the rendevous
+    for i in purchased_buildings:
+        purchased_ants.append([Builder_ant(),0])
+    for ant in purchased_ants:
+        if ant[0].color == VIOLET:
+            ai_resources.copper -= ant[0].price[0]
+        if ant[0].color == RED:
+            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
+                for row in range(2,25):
+                    if map[row][ant[1][1] - ant[0].movement] == 0:
+                        if ai_astar(ant[1],(row,ant[1][1] - ant[0].movement),map):
+                            ant[0].position = [row,ant[1][1] - ant[0].movement]
+                            map[row][ant[1][1] - ant[0].movement] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                            ai.ants.append(ant[0])
+                            ai.new_group.append(ant[0])
+                            break
+                ai_resources.copper -= ant[0].price[0]
+        if ant[0].color == MAGENTA:
+            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
+                for row in range(2,25):
+                    if map[row][ant[1][1] - ant[0].movement] == 0:
+                        if ai_astar(ant[1],(row, ant[1][1] - ant[0].movement),map):
+                            ant[0].position = [row,ant[1][1] - ant[0].movement]
+                            map[row][ant[1][1] - ant[0].movement] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                            ai.ants.append(ant[0])
+                            ai.new_group.append(ant[0])
+                            break
+                ai_resources.copper -= ant[0].price[0]
+    # purchases and rectifies buildings
+    
     for building in purchased_buildings:
         if building.color == COPPER:
             if ai_resources.gold >= building.price[1] and ai_resources.copper >= building.price[0]:
@@ -758,108 +840,45 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
             else:
                 purchased_ants.pop()
 
-    # decides which ants should be purchased based on turn and number of enemy ants
-    if num_turns % 3 != 0:
-        if len(ants) > 2:
-            temp_ants = ants.copy()
-            for i, ant in enumerate(temp_ants):
-                if i > (len(temp_ants)/2):
-                    break
-                temp_ants.append(ant)
-            for barrack in ai.barracks:
-                for action, ant in enumerate(temp_ants):
-                    if action > 3:
-                        break
-                    if ant.color == RED:
-                        purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
-                        temp_ants.remove(ant)
-                    if ant.color == MAGENTA:
-                        purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
-                        temp_ants.remove(ant)  
-    print('before movement and purchase')
-    print(ants)
-    # moves each purchased ant to the rendevous
-    for ant in purchased_ants:
-        print('')
-        print(ai_resources.copper)
-        print(ai_resources.gold)
-        print(ant[0].price[0])
-        if ant[0].color == VIOLET:
-            ai_resources.copper -= ant[0].price[0]
-        if ant[0].color == RED:
-            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
-                for row in range(2,12):
-                    if map[row][ant[1][1] - ant[0].movement] == 0:
-                        if ai_astar(ant[1],(row,ant[1][1] - ant[0].movement),map):
-                            ant[0].position = [row,ant[1][1] - ant[0].movement]
-                            map[row][ant[1][1] - ant[0].movement] = 1
-                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
-                            ai.ants.append(ant[0])
+
+    if num_turns % 3 == 0: # checks for third round
+        ai.attack_groups.append(ai.new_group)
+        ai.new_group =[]
+    
+    available_ai_ants = ai.ants.copy()
+    for ai_ant in ai.ants:
+        for player_ant in ants:
+            if abs(player_ant.position[0] - ai_ant.position[0]) <= ai_ant.movement and abs(player_ant.position[1] - ai_ant.position[1]) <= ai_ant.movement:
+                if player_ant.position[1] > ai_ant.position[1]:
+                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                    ai_ant.position = [player_ant.position[0], player_ant.position[1]-1]
+                    ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                    map[ai_ant.position[0]][ai_ant.position[1]] = 1
+                else:
+                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                    ai_ant.position = [player_ant.position[0], player_ant.position[1]+1]
+                    ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                print(ants)
+                ai_combat(ai_ant, player_ant, ants, resources, ai_resources,ai)
+                remove_menu(ants,buildings,ai)
+                available_ai_ants.remove(ai_ant)
+                break 
+    # if nothing in range moves to the left towards the hq (those ants that are available)
+    for group in ai.attack_groups:
+        for ant in group:
+            if (ant in available_ai_ants):
+                if ant.position[1] - ant.movement < 0:
+                    continue
+                else:
+                    for i in range(0,ant.movement+1):
+                        if map[ant.position[0]][ant.position[1] - ant.movement + i] == 0:
+                            removeant([ant.position[0]*25, ant.position[1]*25])
+                            map[ant.position[0]][ant.position[1]] = 0
+                            ant.position = [ant.position[0], ant.position[1] - ant.movement + i]
+                            ant.rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, 25, 25)
+                            map[ant.position[0]][ant.position[1]] = 1
                             break
-                ai_resources.copper -= ant[0].price[0]
-        if ant[0].color == MAGENTA:
-            if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
-                for row in range(2,12):
-                    if map[row][ant[1][1] - ant[0].movement] == 0:
-                        if ai_astar(ant[1],(row, ant[1][1] - ant[0].movement),map):
-                            ant[0].position = [row,ant[1][1] - ant[0].movement]
-                            map[row][ant[1][1] - ant[0].movement] = 1
-                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
-                            ai.ants.append(ant[0])
-                            break
-                ai_resources.copper -= ant[0].price[0]
-    print('this spor')
-    print(ants)
-    nothing_in_range = True
-    if num_turns % 3 == 0: # checks if an enemy or building is in range, if true attacks
-        for ai_ant in ai.ants:
-            for player_ant in ants:
-                print('positions')
-                print('row')
-                print(abs(player_ant.position[0] - ai_ant.position[0]))
-                print(ai_ant.movement)
-                print('column')
-                print(abs(player_ant.position[1] - ai_ant.position[1]))
-                print(ai_ant.movement)
-                if abs(player_ant.position[0] - ai_ant.position[0]) <= ai_ant.movement and abs(player_ant.position[1] - ai_ant.position[1]) <= ai_ant.movement:
-                    if player_ant.position[1] > ai_ant.position[1]:
-                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
-                        ai_ant.position = [player_ant.position[0], player_ant.position[1]-1]
-                        ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
-                        map[ai_ant.position[0]][ai_ant.position[1]] = 1
-                    else:
-                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
-                        ai_ant.position = [player_ant.position[0], player_ant.position[1]+1]
-                        ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
-                        map[ai_ant.position[0]][ai_ant.position[1]] = 0
-                    print(ants)
-                    ai_combat(ai_ant, player_ant, ants, resources, ai_resources,ai)
-                    remove_menu(ants,buildings,ai)
-                    nothing_in_range = False
-                    break
-        if nothing_in_range: # if nothing in range moves to the left towards the hq
-            for ant in ai.ants:
-                removeant([ant.position[0]*25, ant.position[1]*25])
-                map[ant.position[0]][ant.position[1]] = 0
-                ant.position = [ant.position[0], ant.position[1] - ant.movement]
-                ant.rect = pygame.Rect(ant.position[1]*25, ant.position[0]*25, 25, 25)
-                map[ant.position[0]][ant.position[1]] = 1
-
-    # if num_turns % 3 == 0:
-    #     for count, ant in enumerate(ai.ants):
-    #         if ai_astar(ant.position, (12,3), map):
-    #             if ant.position[0] != 12 and ant.position[0] < 12:
-    #                 if 12 - ant.position[0] >= ant.movement:
-    #                     ant.position = [ant.position[0] + ant.movement + count, 36]
-    #                 else:
-    #                     ant.position = [ant.position[0] + (12 - ant.position[0]) + count, 36]
-    #             elif ant.position[0] != 12 and ant.position[0] > 12:
-    #                 if ant.position[0] - 12 >= ant.movement:
-    #                     ant.position = [ant.position[0] - ant.movement + count, 36]
-    #                 else:
-    #                     ant.position = [ant.position[0] - (ant.position[0] - 12) + count, 36]
-
-
     
     print('ai_resources')
     print(ai_resources.copper)
@@ -880,7 +899,8 @@ def main():
     ant_already_clicked = False
     next_turn = False
     draw_movement = False
-    ants = [Chad_ant([2,43],pygame.Rect(43*25, 2*25, 25, 25)), Chad_ant([3,43],pygame.Rect(43*25, 3*25, 25, 25)), Chad_ant([4,43],pygame.Rect(43*25, 4*25, 25, 25))]
+    ants = []
+    ants = [Chad_ant([2,20],pygame.Rect(20*25, 2*25, 25, 25))]
     buildings = [hq]
     mines = []
     resources = Resources(500, 1000)
@@ -892,7 +912,6 @@ def main():
     fought = False
     while True:
         drawGrid(map, resources, message, buildings, ants, ai)
-        print(ants)
         pygame.draw.rect(SCREEN, GREEN, turn_button)
         draw_text('Next turn', next_turn_font, BLACK, GREEN, SCREEN, WINDOW_WIDTH-50, WINDOW_HEIGHT-25)
         if draw_movement:
@@ -912,8 +931,6 @@ def main():
                     if building.color == GOLD:
                         building.actions = 1
                 ai_turn(resources, mines)
-                print('look here!')
-                print(ants)
                 ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources)
                 num_turns += 1
                 next_turn = False
@@ -998,7 +1015,7 @@ def main():
                                 ants.append(current_ant)
                                 map[end[0]][end[1]] = 1 #creates wall under ant
 
-                                combat(current_ant,defending,ants,resources,ai_resources)
+                                combat(current_ant,defending,ants,resources,ai_resources,ai)
                                 remove_menu(ants,buildings,ai)
 
                                 fought = True
