@@ -63,10 +63,10 @@ def find_opening(start, wall_direction, map, end):
             break
         while True:
             current_node_1 = path_1[-1]
-            print('node_position 1')
+            # print('node_position 1')
             node_position = (current_node_1.position[0] + position_1[0], current_node_1.position[1] + wall_direction)
-            print(node_position)
-            print('')
+            # print(node_position)
+            # print('')
 
             # Make sure within range
             if node_position[0] > (len(map) - 1) or node_position[0] < 0 or node_position[1] > (len(map[len(map)-1]) -1) or node_position[1] < 0:
@@ -93,9 +93,9 @@ def find_opening(start, wall_direction, map, end):
             # print('2')
             current_node_2 = path_2[-1]
             node_position = (current_node_2.position[0] + position_2[0], current_node_2.position[1] + wall_direction)
-            print('node positon2')
-            print(node_position)
-            print('')
+            # print('node positon2')
+            # print(node_position)
+            # print('')
 
             # Make sure within range
             if node_position[0] > (len(map) - 1) or node_position[0] < 0 or node_position[1] > (len(map[len(map)-1]) -1) or node_position[1] < 0:
@@ -140,17 +140,17 @@ def astar(start,end,map): #pathfinding system
     open_list = []
     closed_list = []
     path = []
-    print('start')
-    print(start)
+    # print('start')
+    # print(start)
 
     start_node = Node(None, start)
     start_node.g = start_node.h = start_node.f = 0
     end_node = Node(None, end)
     end_node.g = end_node.h = end_node.f = 0
-    print(start_node)
+    # print(start_node)
 
     open_list.append(start_node)
-    print(open_list)
+    # print(open_list)
     previous_nodes_list = []
     found_wall = False
 
@@ -244,11 +244,11 @@ def astar(start,end,map): #pathfinding system
             children.append(new_node)
         if found_wall:
             start = current_node
-            print('')
-            print("start for find wall func")
-            print(start.position)
-            print('wall_direction:')
-            print(wall_direction)
+            # print('')
+            # print("start for find wall func")
+            # print(start.position)
+            # print('wall_direction:')
+            # print(wall_direction)
             path_to_opening = find_opening(start, wall_direction, map, end)
             # print(path_to_opening)
             continue

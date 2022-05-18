@@ -1,3 +1,4 @@
+from ast import Global
 from distutils.command.build import build
 from enum import EnumMeta
 from importlib import resources
@@ -33,31 +34,7 @@ num_cells_width = 50
 num_cells_height = 25
 blockSize = 25
 SCREEN = pygame.display.set_mode((WINDOW_WIDTH, WINDOW_HEIGHT))
-map = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
 # Global fonts
 barrack_font = pygame.font.Font('freesansbold.ttf', 32)
 menu_font = pygame.font.Font('freesansbold.ttf', 30)
@@ -158,7 +135,7 @@ class AI_resources():
 
 #hq class #builds two times max in a turn
 class HQ():
-    def __init__(self, position=None, rect=None, pr_storage=None, level=1, hp=4, armor=2, color=ORANGE, size=2, actions=2):
+    def __init__(self, position=None, rect=None, pr_storage=None, level=1, hp=15, armor=4, color=ORANGE, size=2, actions=2):
         self.position = position
         self.rect = rect
         self.pr_storage = pr_storage
@@ -171,7 +148,7 @@ class HQ():
 
 #barracks class #builds 4 times max in a turn
 class Barrack():
-    def __init__(self, position=None, rect=None, level=1, hp=4, armor=2, color=WHITE, size=2, actions=4, price=[300,100]):
+    def __init__(self, position=None, rect=None, level=1, hp=8, armor=2, color=WHITE, size=2, actions=4, price=[300,100]):
         self.position = position
         self.rect = rect
         self.level = level
@@ -195,7 +172,7 @@ class Gold_mine():
 
 #copper mine class 
 class Copper_mine():
-    def __init__(self, position=None, rect=None, tick=200, level=1, hp=4, armor=2, color=COPPER, size=1, price=[500,100]):
+    def __init__(self, position=None, rect=None, tick=200, level=1, hp=8, armor=2, color=COPPER, size=1, price=[500,100]):
         self.position = position
         self.rect = rect
         self.tick = tick
@@ -228,6 +205,51 @@ class Turret():
         self.actions = actions
         self.price = price
 
+# end of game screen
+def game_over(num_turns,winner):
+    SCREEN.fill((0,0,0))
+    draw_text('Game Over', menu_font, WHITE, BLACK, SCREEN, WINDOW_WIDTH // 2, 50)
+    if winner:
+        text = 'Congratulations you won the game in {} turns'.format(num_turns)
+        draw_text(text, menu_font, WHITE, BLACK, SCREEN, WINDOW_WIDTH//2, 100)
+    else:
+        text = 'Unfortunately you lost the game in {} turns'.format(num_turns)
+        draw_text(text, menu_font, WHITE, BLACK, SCREEN, WINDOW_WIDTH//2, 100)
+    while True:
+        mx, my = pygame.mouse.get_pos()
+ 
+        menu_button_2 = pygame.Rect(0, 0, 200, 50)
+        menu_button_3 = pygame.Rect(0, 0, 200, 50)
+        menu_button_2.center = (WINDOW_WIDTH // 2, 175)
+        menu_button_3.center = (WINDOW_WIDTH // 2, 500)
+        if menu_button_2.collidepoint((mx, my)):
+            if click: 
+                main()
+        if menu_button_3.collidepoint((mx, my)):
+            if click:
+                quit()
+        pygame.draw.rect(SCREEN, GREEN, menu_button_2)
+        draw_text('Play again', menu_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH // 2, 175)
+        pygame.draw.rect(SCREEN, RED, menu_button_3)
+        draw_text('Quit', menu_font, WHITE, RED, SCREEN, WINDOW_WIDTH // 2, 500)
+
+        click = False
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                pygame.quit()
+                sys.exit()
+            if event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_ESCAPE:
+                    pygame.quit()
+                    sys.exit()
+            if event.type == pygame.MOUSEBUTTONDOWN:
+                if event.button == 1:
+                    click = True
+ 
+        pygame.display.update()
+        CLOCK.tick(60)
+
+
 #checks if resources are available for a purchase and in that case deducts them from the balance
 def purchase(resources,ant):
     if resources.copper >= ant.price[0] and resources.gold >= ant.price[1]:
@@ -236,6 +258,33 @@ def purchase(resources,ant):
         return True
     else:
         return False
+
+# building combat
+def building_combat(attacking,defending,resources,ai):
+    bonus = random.randint(-2,2)
+    defending.hp = defending.hp - (attacking.attack + bonus - defending.armor)
+    if defending.hp <= 0:
+        if defending.color == ORANGE:
+            game_over(num_turns,True)
+        ai.buildings.remove(defending)
+        map[defending.position[0]][defending.position[1]] = 0 #removes wall on building
+        map[defending.position[0]][defending.position[1]+1] = 0
+        map[defending.position[0]+1][defending.position[1]] = 0
+        map[defending.position[0]+1][defending.position[1]+1] = 0
+        resources.gold += 100
+
+def ai_building_combat(attacking,defending,buildings,ai_resources):
+    bonus = random.randint(-2,2)
+    defending.hp = defending.hp - (attacking.attack + bonus - defending.armor)
+    if defending.hp <= 0:
+        if defending.color == ORANGE:
+            game_over(num_turns,False)
+        buildings.remove(defending)
+        map[defending.position[0]][defending.position[1]] = 0 #removes wall on building
+        map[defending.position[0]][defending.position[1]+1] = 0
+        map[defending.position[0]+1][defending.position[1]] = 0
+        map[defending.position[0]+1][defending.position[1]+1] = 0
+        ai_resources.gold += 100
 
 #combat between two ants
 def combat(attacking,defending,ants,resources,ai_resources,ai):
@@ -336,6 +385,20 @@ def draw_movement_func(ant,map):
             except:
                 pass
     pygame.draw.rect(SCREEN,ant.color,ant.rect)
+
+def draw_range_func(object,map):
+    blockSize = 25 #Set the size of the grid block
+    for x in range((object.position[1]-object.range)*blockSize, (object.position[1]+object.range+1)*blockSize, blockSize):
+        for y in range((object.position[0]-object.range)*blockSize, (object.position[0]+object.range+1)*blockSize, blockSize):
+            try:
+                if map[int(y/blockSize)][int(x/blockSize)] == 0:
+                    rect = pygame.Rect(x, y, blockSize, blockSize)
+                    white_space = pygame.Rect(x,y,blockSize,blockSize)
+                    pygame.draw.rect(SCREEN, CYAN, rect)
+                    pygame.draw.rect(SCREEN,WHITE,white_space,1)
+            except:
+                pass
+    pygame.draw.rect(SCREEN,object.color,object.rect)
 
 #removes the menu from the screen and redraws all buildings and ants
 def remove_menu(ants, building_list,ai):
@@ -562,38 +625,39 @@ def builder_menu(builder,ants,buildings,mines,resources):
                             draw_info_bar(resources, 'You do not have enough resources!')
         pygame.display.update()
 
-def tower_menu(building,ants,buildings):
-    # Menu screen
-    menu_rect = pygame.Rect(75, 75, 1100, 475)
-    pygame.draw.rect(SCREEN, BLUE, (menu_rect))
-    #Button text
-    draw_text('Level Up', barrack_font, RED, BLACK, SCREEN, 625, 462)
-    selected = False
-    while True:
-        if selected:
-            break
-        level_up_button = pygame.Rect(600, 362, 50, 50)
-        exit_button = pygame.Rect(75,75,50,50)
-        pygame.draw.rect(SCREEN, WHITE, (level_up_button))
-        pygame.draw.rect(SCREEN,RED,(exit_button))
+def tower_menu(building,ants,buildings,resources):
+    draw_range_func(building,map)
+    # Level up menu screen
+    # menu_rect = pygame.Rect(75, 75, 1100, 475)
+    # pygame.draw.rect(SCREEN, BLUE, (menu_rect))
+    # #Button text
+    # draw_text('Level Up', barrack_font, RED, BLACK, SCREEN, 625, 462)
+    # selected = False
+    # while True:
+    #     if selected:
+    #         break
+    #     level_up_button = pygame.Rect(600, 362, 50, 50)
+    #     exit_button = pygame.Rect(75,75,50,50)
+    #     pygame.draw.rect(SCREEN, WHITE, (level_up_button))
+    #     pygame.draw.rect(SCREEN,RED,(exit_button))
 
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT:
-                pygame.quit()
-                sys.exit()
-            if event.type == pygame.MOUSEBUTTONDOWN:
-                mouse_presses = pygame.mouse.get_pressed()
-                if mouse_presses[0]:  # Left mouse button.
-                    if exit_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings,ai)
-                        selected = True
-                        break
-                    if level_up_button.collidepoint((pygame.mouse.get_pos())):
-                        remove_menu(ants,buildings,ai)
-                        building.level += 1
-                        selected = True
-                        break
-        pygame.display.update()
+    #     for event in pygame.event.get():
+    #         if event.type == pygame.QUIT:
+    #             pygame.quit()
+    #             sys.exit()
+    #         if event.type == pygame.MOUSEBUTTONDOWN:
+    #             mouse_presses = pygame.mouse.get_pressed()
+    #             if mouse_presses[0]:  # Left mouse button.
+    #                 if exit_button.collidepoint((pygame.mouse.get_pos())):
+    #                     remove_menu(ants,buildings,ai)
+    #                     selected = True
+    #                     break
+    #                 if level_up_button.collidepoint((pygame.mouse.get_pos())):
+    #                     remove_menu(ants,buildings,ai)
+    #                     building.level += 1
+    #                     selected = True
+    #                     break
+    #     pygame.display.update()
 
 # main menu
 def main_menu():
@@ -848,19 +912,42 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
     available_ai_ants = ai.ants.copy()
     for ai_ant in ai.ants:
         for player_ant in ants:
+            move = True
             if abs(player_ant.position[0] - ai_ant.position[0]) <= ai_ant.movement and abs(player_ant.position[1] - ai_ant.position[1]) <= ai_ant.movement:
-                if player_ant.position[1] > ai_ant.position[1]:
-                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
-                    ai_ant.position = [player_ant.position[0], player_ant.position[1]-1]
-                    ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
-                    map[ai_ant.position[0]][ai_ant.position[1]] = 1
-                else:
-                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
-                    ai_ant.position = [player_ant.position[0], player_ant.position[1]+1]
-                    ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
-                    map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                for direction in [(0,0),(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+                    if (player_ant.position[0]+direction[0],player_ant.position[1]+direction[1]) == ai_ant.position:
+                        move = False
+                        break
+                if move:
+                    for direction in [(0,0),(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+                        if map[player_ant.position[0]+direction[0]][player_ant.position[1]+direction[1]] == 0:
+                            map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                            ai_ant.position = (player_ant.position[0]+direction[0],player_ant.position[1]+direction[1])
+                            ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                            map[ai_ant.position[0]][ai_ant.position[1]] = 1
+                            break
                 print(ants)
                 ai_combat(ai_ant, player_ant, ants, resources, ai_resources,ai)
+                remove_menu(ants,buildings,ai)
+                available_ai_ants.remove(ai_ant)
+                break 
+        for building in buildings:
+            move = True
+            if abs(building.position[0] - ai_ant.position[0]) <= ai_ant.movement and abs(building.position[1] - ai_ant.position[1]) <= ai_ant.movement:
+                for direction in [(0,0), (0, -1), (0, 2), (-1, -1), (1, 0), (-1, 2), (-2, 0), (-2, -1)]:
+                    if (building.position[0]+direction[0],building.position[1]+direction[1]) == ai_ant.position:
+                        move = False
+                        break
+                if move:
+                   for direction in [(0,0), (0, -1), (0, 2), (-1, -1), (1, 0), (-1, 2), (-2, 0), (-2, -1)]:
+                        if map[building.position[0]+direction[0]][building.position[1]+direction[1]] == 0:
+                            map[ai_ant.position[0]][ai_ant.position[1]] = 0
+                            ai_ant.position = (building.position[0]+direction[0],building.position[1]+direction[1])
+                            ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
+                            map[ai_ant.position[0]][ai_ant.position[1]] = 1
+                            break
+                print(ants)
+                ai_building_combat(ai_ant, building, buildings,ai_resources)
                 remove_menu(ants,buildings,ai)
                 available_ai_ants.remove(ai_ant)
                 break 
@@ -890,7 +977,32 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
         
 
 def main():
-    # currently testing if ai will build and place ants based on num and type of player ants
+    global map
+    map = [[1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
     global SCREEN, CLOCK
     SCREEN.fill(BLACK)
     turn_button = pygame.Rect(WINDOW_WIDTH-100, WINDOW_HEIGHT-50, 100, 50)
@@ -900,13 +1012,14 @@ def main():
     next_turn = False
     draw_movement = False
     ants = []
-    ants = [Chad_ant([2,20],pygame.Rect(20*25, 2*25, 25, 25))]
+    ants = [Chad_ant([5,43],pygame.Rect(43*25, 5*25, 25, 25)),Chad_ant([4,43],pygame.Rect(43*25, 4*25, 25, 25))]
     buildings = [hq]
     mines = []
     resources = Resources(500, 1000)
     ai_resources = AI_resources()
     global ai
     ai = AI([], [ai_hq])
+    global num_turns
     num_turns = 0
     message = None
     fought = False
@@ -949,10 +1062,18 @@ def main():
             for building in buildings:
                 if building.rect.collidepoint((pygame.mouse.get_pos())):
                     try:
-                        message = 'HP: {} Armor: {} Building has {} actions left'.format(building.hp, building.armor, building.actions)
+                        message = 'Friendly HP: {} Armor: {} Building has {} actions left'.format(building.hp, building.armor, building.actions)
                         draw_info_bar(resources, message)
                     except:
-                        message = 'HP: {} Armor: {} Building cannot perform actions'.format(building.hp, building.armor)
+                        message = 'Friendly HP: {} Armor: {} Building cannot perform actions'.format(building.hp, building.armor)
+                        draw_info_bar(resources, message)
+            for building in ai.buildings:
+                if building.rect.collidepoint((pygame.mouse.get_pos())):
+                    try:
+                        message = 'Enemy HP: {} Armor: {} Building has {} actions left'.format(building.hp, building.armor, building.actions)
+                        draw_info_bar(resources, message)
+                    except:
+                        message = 'Enemy HP: {} Armor: {} Building cannot perform actions'.format(building.hp, building.armor)
                         draw_info_bar(resources, message)
             if event.type == pygame.MOUSEBUTTONDOWN:
                 mouse_presses = pygame.mouse.get_pressed()
@@ -976,21 +1097,27 @@ def main():
                                     barrack_menu(building,ants,buildings,resources)
                                     break
                     
-                    # if barrack.rect.collidepoint((pygame.mouse.get_pos())):
-                    #     menu(ants, buildings)
                     if ant_already_clicked:
+                        exit_func = False
                         for defending in ai.ants:
                             if defending.rect.collidepoint((pygame.mouse.get_pos())):
                                 remove_menu(ants,buildings,ai)
                                 draw_movement = False
                                 prev_cord = [-25,-25]
                                 ant_already_clicked = False
+                                exit_func = True
                                 mouse_position = pygame.mouse.get_pos()
                                 # print(mouse_position)
                                 column, r1 = divmod(mouse_position[0],25)
                                 row, r2 = divmod(mouse_position[1],25)
+                                for direction in [(0,0),(0, -1), (0, 1), (-1, 0), (1, 0), (-1, -1), (-1, 1), (1, -1), (1, 1)]:
+                                    if map[row+direction[0]][column+direction[1]] == 0:
+                                        end = (row+direction[0],column+direction[1])
+                                        exit_func = False
+                                if exit_func:
+                                    message = 'That Ant is already surrounded'
+                                    continue
                                 map[current_ant.position[0]][current_ant.position[1]] = 0 #removes wall on ant
-                                end = (row, column-1)
                                 if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
                                     message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
                                     ants.append(current_ant)
@@ -1019,6 +1146,68 @@ def main():
                                 remove_menu(ants,buildings,ai)
 
                                 fought = True
+                        for defending in ai.buildings:
+                            if defending.rect.collidepoint((pygame.mouse.get_pos())):
+                                remove_menu(ants,buildings,ai)
+                                draw_movement = False
+                                prev_cord = [-25,-25]
+                                exit_func = True
+                                ant_already_clicked = False
+                                move = True
+                                mouse_position = pygame.mouse.get_pos()
+                                # print(mouse_position)
+                                # column, r1 = divmod(mouse_position[0],25)
+                                # row, r2 = divmod(mouse_position[1],25)
+                                column = defending.position[1]
+                                row = defending.position[0]
+                                print('building pos')
+                                print(row,column)
+                                for direction in [(0,0), (0, -1), (0, 2), (-1, 0), (-1, 1), (2, 0), (2, -1), (-1,-1)]:
+                                    print([row+direction[0],column+direction[1]])
+                                    print(current_ant.position)
+                                    print('')
+                                    if (row+direction[0],column+direction[1]) == current_ant.position:
+                                        move = False
+                                        break
+                                if move:
+                                    for direction in [(0,0), (0, -1), (0, 2), (-1, -1), (1, 0), (-1, 2), (-2, 0), (-2, -1)]:
+                                        if map[row+direction[0]][column+direction[1]] == 0:
+                                            end = (row+direction[0],column+direction[1])
+                                            exit_func = False
+                                            break
+                                    if exit_func:
+                                        message = 'That building is already surrounded'
+                                        break
+                                    map[current_ant.position[0]][current_ant.position[1]] = 0 #removes wall on ant
+                                    if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
+                                        message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
+                                        ants.append(current_ant)
+                                        remove_menu(ants,buildings,ai)
+                                        continue
+
+                                    path = astar(current_ant.position,end,map)
+                                    # print(path)
+                                    grid_path = gridpath(path)
+                                    # print(grid_path)
+
+                                    for cord in grid_path:
+                                        drawGrid(map, resources, message, buildings,ants,ai)
+                                        time.sleep(0.2)
+                                        removeant(prev_cord)
+                                        prev_cord = cord
+                                        drawant(cord, current_ant.color)
+                                        pygame.display.update()
+                                    ant = pygame.Rect(end[1]*25, end[0]*25, blockSize, blockSize)
+                                    current_ant.rect = ant
+                                    current_ant.position = end
+                                    map[end[0]][end[1]] = 1 #creates wall under ant
+                                ants.append(current_ant)
+                                building_combat(current_ant,defending,resources,ai)
+                                remove_menu(ants,buildings,ai)
+
+                                fought = True
+                        if exit_func:
+                            continue
                         print(fought)
                         if fought:
                             continue
