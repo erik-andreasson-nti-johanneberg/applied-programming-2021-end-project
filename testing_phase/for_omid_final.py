@@ -1,10 +1,3 @@
-from ast import Global
-from distutils.command.build import build
-from enum import EnumMeta
-from importlib import resources
-from turtle import position
-from matplotlib.style import available
-from numpy import block
 import pygame
 import sys
 import time
@@ -27,6 +20,7 @@ MAGENTA = (255,0,255)
 BROWN = (139,69,19)
 VIOLET = (238,130,238)
 CYAN = (0,204,204)
+PURPLE = (128, 0, 128)
 # Screen sizes
 WINDOW_HEIGHT = 625
 WINDOW_WIDTH = 1250
@@ -52,15 +46,9 @@ class AI():
         self.attack_groups = attack_groups
         self.new_group = new_group
 
-#ant class
-class Ant():
-    def __init__(self, position=None, rect=None):
-        self.position = position
-        self.rect = rect
-
 #builder ant
 class Builder_ant():
-    def __init__(self, position=None, rect=None, movement=2, hp=1, range=0, attack=0, color=VIOLET, actions=2, price=[100,0]):
+    def __init__(self, position=None, rect=None, movement=3, hp=1, range=0, attack=0, color=VIOLET, actions=2, price=[100,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -86,7 +74,7 @@ class Beta_ant():
 
 #chad ant
 class Chad_ant():
-    def __init__(self, position=None, rect=None, movement=9, hp=5, range=1, attack=6, color=MAGENTA, actions=1, price=[100,0]):
+    def __init__(self, position=None, rect=None, movement=8, hp=5, range=1, attack=6, color=MAGENTA, actions=1, price=[100,0]):
         self.position = position
         self.rect = rect
         self.movement = movement
@@ -96,18 +84,6 @@ class Chad_ant():
         self.color = color
         self.actions = actions
         self.price = price
-
-#sigma ant
-class Sigma_ant():
-    def __init__(self, position=None, rect=None, movement=7, hp=3, range=4, attack=4, color=BROWN, actions=1, price=[0,0]):
-        self.position = position
-        self.rect = rect
-        self.movement = movement
-        self.hp = hp
-        self.range = range
-        self.attack = attack
-        self.color = color
-        self.actions = actions
 
 #queen ant
 class Queen_ant():
@@ -159,17 +135,6 @@ class Barrack():
         self.actions = actions
         self.price = price
 
-#gold mine class #Archived
-class Gold_mine():
-    def __init__(self, position=None, rect=None, tick=100, level=1, hp=4, armor=2, color=GOLD):
-        self.position = position
-        self.rect = rect
-        self.tick = tick
-        self.level = level
-        self.hp = hp
-        self.armor = armor
-        self.color = color
-
 #copper mine class 
 class Copper_mine():
     def __init__(self, position=None, rect=None, tick=200, level=1, hp=8, armor=2, color=COPPER, size=1, price=[500,100]):
@@ -181,28 +146,6 @@ class Copper_mine():
         self.armor = armor
         self.color = color
         self.size = size
-        self.price = price
-        
-
-class Wall():
-    def __init__(self, position=None, rect=None, hp=10, armor=2):
-        self.position = position
-        self.rect = rect
-        self.hp = hp
-        self.armor = armor
-
-class Turret():
-    def __init__(self, position=None, rect=None, hp=5, armor=2, range=4, attack=4, level=1, color=GOLD, size=1, actions=1, price=[200,50]):
-        self.position = position
-        self.rect = rect
-        self.hp = hp
-        self.armor = armor
-        self.range = range
-        self.attack = attack
-        self.level = level
-        self.color = color
-        self.size = size
-        self.actions = actions
         self.price = price
 
 # end of game screen
@@ -228,7 +171,7 @@ def game_over(num_turns,winner):
         if menu_button_3.collidepoint((mx, my)):
             if click:
                 quit()
-        pygame.draw.rect(SCREEN, GREEN, menu_button_2)
+        pygame.draw.rect(SCREEN, BLUE, menu_button_2)
         draw_text('Play again', menu_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH // 2, 175)
         pygame.draw.rect(SCREEN, RED, menu_button_3)
         draw_text('Quit', menu_font, WHITE, RED, SCREEN, WINDOW_WIDTH // 2, 500)
@@ -307,11 +250,11 @@ def ai_combat(attacking,defending,ants,resources,ai_resources,ai):
     if defending.hp <= 0:
         ants.remove(defending)
         map[defending.position[0]][defending.position[1]] = 0 #removes wall on ant
-        resources.gold += 25
+        ai_resources.gold += 25
     if attacking.hp <= 0:
         ai.ants.remove(attacking)
         map[attacking.position[0]][attacking.position[1]] = 0 #removes wall on ant
-        ai_resources.gold += 25
+        resources.gold += 25
 
 # makes building placements into walls in the map
 def place_walls(position,size):
@@ -358,9 +301,11 @@ def drawGrid(map, resources,message,buildings,ants,ai):
                 pygame.draw.rect(SCREEN, WHITE, rect, 1)
     for building in buildings_to_draw:
         pygame.draw.rect(SCREEN,building.color,building.rect)
+    for building in ai.buildings:
+        pygame.draw.rect(SCREEN, PURPLE, pygame.Rect(building.position[1]*25, building.position[0]*25, 12,12))
     for ant in ai.ants:
         pygame.draw.rect(SCREEN, ant.color, ant.rect)
-        pygame.draw.rect(SCREEN, RED, pygame.Rect(ant.position[1]*25, ant.position[0]*25, 8,8))
+        pygame.draw.rect(SCREEN, PURPLE, pygame.Rect(ant.position[1]*25, ant.position[0]*25, 8,8))
     for ant in ants:
         pygame.draw.rect(SCREEN,ant.color,ant.rect)
     draw_info_bar(resources,message)
@@ -371,6 +316,8 @@ def draw_info_bar(resources,message):
     draw_text('Gold: ' + str(resources.gold), info_bar_font, WHITE, BLUE, SCREEN, 50, blockSize/2)
     draw_text('Copper: ' + str(resources.copper), info_bar_font, WHITE, BLUE, SCREEN, 150, blockSize/2)
     draw_text(message, info_bar_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH/2, blockSize/2)
+    turn_message = 'Current turn: {}'.format(num_turns+1)
+    draw_text(turn_message, info_bar_font, WHITE, BLUE, SCREEN, WINDOW_WIDTH-60, blockSize/2)
 
 def draw_movement_func(ant,map):
     blockSize = 25 #Set the size of the grid block
@@ -417,15 +364,6 @@ def remove_menu(ants, building_list,ai):
         building_rect = pygame.Rect(building.position[1]*25, building.position[0]*25, building.size*25, building.size*25)
         pygame.draw.rect(SCREEN, building.color, building_rect)
 #Menus
-
-#stat menu
-# def stat_menu(ant):
-#     menu_rect = pygame.Rect(ant.position[1]*25-25, ant.position[0]*25-50, 50, 50)
-#     pygame.draw.rect(SCREEN,BLUE, (menu_rect))
-#     draw_text('HP: {}'.format(ant.hp), stat_font, RED, BLACK, SCREEN, 5, 25)
-#     draw_text('Attack: {}'.format(ant.attack), stat_font, RED, BLACK, SCREEN, 25, 25)
-
-
 # barrack_menu    
 def barrack_menu(building, ants, buildings,resources):
     # Menu screen
@@ -533,16 +471,19 @@ def hq_menu(building,ants,buildings,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
                     if queen_myra_button.collidepoint((pygame.mouse.get_pos())):
-                        queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
-                        if purchase(resources,queen_ant):
-                            remove_menu(ants,buildings,ai)
-                            ants.append(queen_ant)
-                            pygame.draw.rect(SCREEN, queen_ant.color, (queen_myra_rect))
-                            selected = True
-                            building.actions -= 1
-                            break
+                        if num_turns >= 4:
+                            queen_ant = Queen_ant(position_queen_myra, queen_myra_rect)
+                            if purchase(resources,queen_ant):
+                                remove_menu(ants,buildings,ai)
+                                ants.append(queen_ant)
+                                pygame.draw.rect(SCREEN, queen_ant.color, (queen_myra_rect))
+                                selected = True
+                                building.actions -= 1
+                                break
+                            else:
+                                draw_info_bar(resources, 'You do not have enough resources!')
                         else:
-                            draw_info_bar(resources, 'You do not have enough resources!')
+                            draw_info_bar(resources, 'The queen ant can only be purchased past round 5')
         pygame.display.update()
 
 def builder_menu(builder,ants,buildings,mines,resources):
@@ -552,28 +493,23 @@ def builder_menu(builder,ants,buildings,mines,resources):
     pygame.draw.rect(SCREEN, BLUE, (menu_rect))
     #Button text
     draw_text('Copper Mine: 500C 100G', barrack_font, RED, BLACK, SCREEN, 825, 300)
-    draw_text('Turret: 200C 50G', barrack_font, RED, BLACK, SCREEN, 425, 300)
-    draw_text('Barracks: 300C 100G', barrack_font, RED, BLACK, SCREEN, 825, 500)
+    draw_text('Barracks: 300C 100G', barrack_font, RED, BLACK, SCREEN, 425, 300)
     selected = False
     while True:
         if selected:
             break
         copper_mine_button = pygame.Rect(800, 200, 50, 50)
-        tower_button = pygame.Rect(400, 200, 50, 50)
-        barracks_button = pygame.Rect(800,400,50,50)
+        barracks_button = pygame.Rect(400,200,50,50)
         exit_button = pygame.Rect(75,75,50,50)
 
         position_copper_mine = builder_position
-        position_tower = builder_position
         position_barracks = builder_position
 
         copper_mine_rect = pygame.Rect(position_copper_mine[1]*25, position_copper_mine[0]*25, blockSize, blockSize)
-        tower_rect = pygame.Rect(position_tower[1]*25, position_tower[0]*25, blockSize, blockSize)
         barracks_rect = pygame.Rect(position_barracks[1]*25, position_barracks[0]*25, 50, 50)
         
 
         pygame.draw.rect(SCREEN, WHITE, (copper_mine_button))
-        pygame.draw.rect(SCREEN, WHITE, (tower_button))
         pygame.draw.rect(SCREEN, WHITE, (barracks_button))
         pygame.draw.rect(SCREEN,RED,(exit_button))
 
@@ -596,19 +532,7 @@ def builder_menu(builder,ants,buildings,mines,resources):
                             place_walls(builder_position,mine.size)
                             buildings.append(mine)
                             mines.append(mine)
-                            pygame.draw.rect(SCREEN, mine.color, (tower_rect))
-                            selected = True
-                            break
-                        else:
-                            draw_info_bar(resources, 'You do not have enough resources!')
-                    if tower_button.collidepoint((pygame.mouse.get_pos())):
-                        turret = Turret(position_tower, tower_rect)
-                        if purchase(resources,turret):
-                            ants.remove(builder)
-                            remove_menu(ants,buildings,ai)
-                            place_walls(builder_position,turret.size)
-                            buildings.append(turret)
-                            pygame.draw.rect(SCREEN, turret.color, (tower_rect))
+                            pygame.draw.rect(SCREEN, mine.color, (copper_mine_rect))
                             selected = True
                             break
                         else:
@@ -626,40 +550,6 @@ def builder_menu(builder,ants,buildings,mines,resources):
                         else:
                             draw_info_bar(resources, 'You do not have enough resources!')
         pygame.display.update()
-
-def tower_menu(building,ants,buildings,resources):
-    draw_range_func(building,map)
-    # Level up menu screen
-    # menu_rect = pygame.Rect(75, 75, 1100, 475)
-    # pygame.draw.rect(SCREEN, BLUE, (menu_rect))
-    # #Button text
-    # draw_text('Level Up', barrack_font, RED, BLACK, SCREEN, 625, 462)
-    # selected = False
-    # while True:
-    #     if selected:
-    #         break
-    #     level_up_button = pygame.Rect(600, 362, 50, 50)
-    #     exit_button = pygame.Rect(75,75,50,50)
-    #     pygame.draw.rect(SCREEN, WHITE, (level_up_button))
-    #     pygame.draw.rect(SCREEN,RED,(exit_button))
-
-    #     for event in pygame.event.get():
-    #         if event.type == pygame.QUIT:
-    #             pygame.quit()
-    #             sys.exit()
-    #         if event.type == pygame.MOUSEBUTTONDOWN:
-    #             mouse_presses = pygame.mouse.get_pressed()
-    #             if mouse_presses[0]:  # Left mouse button.
-    #                 if exit_button.collidepoint((pygame.mouse.get_pos())):
-    #                     remove_menu(ants,buildings,ai)
-    #                     selected = True
-    #                     break
-    #                 if level_up_button.collidepoint((pygame.mouse.get_pos())):
-    #                     remove_menu(ants,buildings,ai)
-    #                     building.level += 1
-    #                     selected = True
-    #                     break
-    #     pygame.display.update()
 
 # main menu
 def main_menu():
@@ -731,30 +621,6 @@ def hq_ai():
     hq = HQ(position, hq)
     return hq
 
-#old
-def barrack_():
-    position = [4,4]
-    barrack = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
-    pygame.draw.rect(SCREEN, WHITE, (barrack))
-    barrack = Barrack(position, barrack)
-    return barrack
-
-#old
-def gold_mine_():
-    position = [10,10]
-    gold_mine = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
-    pygame.draw.rect(SCREEN, GOLD, (gold_mine))
-    gold_mine = Gold_mine(position, gold_mine, 100)
-    return gold_mine
-
-#old
-def copper_mine_():
-    position = [10,15]
-    copper_mine = pygame.Rect(position[1]*blockSize, position[0]*blockSize, 50, 50)
-    pygame.draw.rect(SCREEN, COPPER, (copper_mine))
-    copper_mine = Gold_mine(position, copper_mine, 100)
-    return copper_mine
-
 def removeant(cord):
     antsize = 25
     removeant = pygame.Rect(cord[1], cord[0], antsize, antsize)
@@ -778,13 +644,15 @@ def gridpath(path):
         grid_path.append(new_cord)
     return grid_path
 
-def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
-    # Implement destruction of buildings and the basic playable ai should be finished. Need turret functionality for player and perhaps other improvements for the ai
+def ai_actions(ants,buildings,ai_resources,ai,num_turns,map,resources):
     print('num turns')
     print(num_turns)
     for mine in ai.mines:
-        print(mine.tick)
+        print(mine)
         ai_resources.copper += mine.tick
+    print('ai resources pre turn')
+    print(ai_resources.copper)
+    print(ai_resources.gold)
     purchased_ants = []
     purchased_buildings = []
     if num_turns < 1:
@@ -798,10 +666,6 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
             for ant in ants:
                 if ant.position[1] >= 25:
                     threats += 1
-            if ai_resources.gold > 0:
-                print('we rich')
-            else:
-                print('poor')
             if threats > 0 or ai_resources.gold == 0:
                 temp_ants = ants.copy()
                 for i, ant in enumerate(temp_ants):
@@ -814,11 +678,12 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
                         if action > 3:
                             break
                         if decider >= 9:
-                            purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
-                            temp_ants.remove(ant)
+                            if ai_resources.copper >= 150:
+                                purchased_ants.append([Beta_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
+                            else:
+                                purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
                         else:
                             purchased_ants.append([Chad_ant(),[barrack.position[0]+1, barrack.position[1]-2]])
-                            temp_ants.remove(ant)
             else:
                 if len(ai.barracks) >= len(ai.mines) and len(ai.barracks) != 0:
                     purchased_buildings.append(Copper_mine())
@@ -900,27 +765,29 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
         if ant[0].color == RED:
             if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
                 for row in range(row_start,row_end,step):
-                    if map[row][ant[1][1] - ant[0].movement] == 0:
-                        if ai_astar(ant[1],(row,ant[1][1] - ant[0].movement),map):
-                            ant[0].position = [row,ant[1][1] - ant[0].movement]
-                            map[row][ant[1][1] - ant[0].movement] = 1
-                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                    if map[row][ant[1][1] - 4] == 0:
+                        if ai_astar(ant[1],(row,ant[1][1] - 4),map):
+                            ant[0].position = [row,ant[1][1] - 4]
+                            map[row][ant[1][1] - 4] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - 4)*25, row*25, 25, 25)
                             ai.ants.append(ant[0])
                             ai.new_group.append(ant[0])
                             break
                 ai_resources.copper -= ant[0].price[0]
+                print('bought beta')
         if ant[0].color == MAGENTA:
             if ai_resources.gold >= ant[0].price[1] and ai_resources.copper >= ant[0].price[0]:
                 for row in range(row_start,row_end,step):
-                    if map[row][ant[1][1] - ant[0].movement] == 0:
-                        if ai_astar(ant[1],(row, ant[1][1] - ant[0].movement),map):
-                            ant[0].position = [row,ant[1][1] - ant[0].movement]
-                            map[row][ant[1][1] - ant[0].movement] = 1
-                            ant[0].rect = pygame.Rect((ant[1][1] - ant[0].movement)*25, row*25, 25, 25)
+                    if map[row][ant[1][1] - 3] == 0:
+                        if ai_astar(ant[1],(row, ant[1][1] - 3),map):
+                            ant[0].position = [row,ant[1][1] - 3]
+                            map[row][ant[1][1] - 3] = 1
+                            ant[0].rect = pygame.Rect((ant[1][1] - 3)*25, row*25, 25, 25)
                             ai.ants.append(ant[0])
                             ai.new_group.append(ant[0])
                             break
                 ai_resources.copper -= ant[0].price[0]
+                print('bought chad')
     # purchases and rectifies buildings
     
     
@@ -971,7 +838,6 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
                                 ai_ant.rect = pygame.Rect(ai_ant.position[1]*25, ai_ant.position[0]*25, 25, 25)
                                 map[ai_ant.position[0]][ai_ant.position[1]] = 1
                                 break
-                    print(ants)
                     ai_building_combat(ai_ant, building, buildings,ai_resources)
                     remove_menu(ants,buildings,ai)
                     available_ai_ants.remove(ai_ant)
@@ -992,12 +858,12 @@ def ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources):
                             map[ant.position[0]][ant.position[1]] = 1
                             break
     
-    print('ai_resources')
+    print('ai_resources post turn')
     print(ai_resources.copper)
     print(ai_resources.gold)
     print('')
-    print(ai.ants)
-    print('')
+    # print(ai.ants)
+    # print('')
 
         
 
@@ -1007,24 +873,24 @@ def main():
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
-        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+        [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
         [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]]
@@ -1037,13 +903,12 @@ def main():
     next_turn = False
     draw_movement = False
     ants = []
-    # ants = [Chad_ant([5,43],pygame.Rect(43*25, 5*25, 25, 25)),Beta_ant([4,43],pygame.Rect(43*25, 4*25, 25, 25))]
     buildings = [hq]
     mines = []
     resources = Resources(500, 1000)
-    ai_resources = AI_resources()
+    ai_resources = AI_resources(500,1000)
     global ai
-    ai = AI([], [ai_hq])
+    ai = AI([], [ai_hq],[],[],[],[])
     global num_turns
     num_turns = 0
     message = None
@@ -1069,7 +934,7 @@ def main():
                     if building.color == GOLD:
                         building.actions = 1
                 ai_turn(resources, mines)
-                ai_actions(ants,buildings,ai_resources,mines,ai,num_turns,map,resources)
+                ai_actions(ants,buildings,ai_resources,ai,num_turns,map,resources)
                 num_turns += 1
                 next_turn = False
                 break
@@ -1113,9 +978,6 @@ def main():
                             if building.actions >= 1:
                                 if building.color == ORANGE:
                                     hq_menu(building,ants,buildings,resources)
-                                    break
-                                if building.color == GOLD:
-                                    tower_menu(building,ants,buildings,resources)
                                     break
                                 if building.color == WHITE:
                                     barrack_menu(building,ants,buildings,resources)
@@ -1245,36 +1107,41 @@ def main():
                         # print(mouse_position)
                         column, r1 = divmod(mouse_position[0],25)
                         row, r2 = divmod(mouse_position[1],25)
-                        end = (row, column)
-                        map[current_ant.position[0]][current_ant.position[1]] = 0 #removes wall on ant
-                        if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
-                            message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
+                        if current_ant.position[0] == row and current_ant.position[1] == column:
+                            current_ant.actions += 1
                             ants.append(current_ant)
-                            remove_menu(ants,buildings,ai)
                             continue
-                        print('positions')
-                        print(current_ant.position)
-                        print(end)
-                        path = astar(current_ant.position,end,map)
-                        # print(path)
-                        grid_path = gridpath(path)
-                        # print(grid_path)
+                        if map[row][column] == 0:
+                            end = (row, column)
+                            if column-current_ant.position[1] > current_ant.movement or current_ant.movement < row-current_ant.position[0]:
+                                message = 'Clicked a tile out of range for ant. Range is {}'.format(current_ant.movement)
+                                ants.append(current_ant)
+                                remove_menu(ants,buildings,ai)
+                                continue
+                            map[current_ant.position[0]][current_ant.position[1]] = 0 #removes wall on ant
+                            path = astar(current_ant.position,end,map)
+                            # print(path)
+                            grid_path = gridpath(path)
+                            print(grid_path)
+                            for cord in grid_path:
+                                drawGrid(map, resources, message, buildings,ants,ai)
+                                time.sleep(0.05)
+                                removeant(prev_cord)
+                                prev_cord = cord
+                                drawant(cord, current_ant.color)
+                                pygame.display.update()
+                            ant = pygame.Rect(end[1]*25, end[0]*25, blockSize, blockSize)
+                            current_ant.rect = ant
+                            current_ant.position = end
+                            map[end[0]][end[1]] = 1 #creates wall under ant
+                            ants.append(current_ant)
 
-                        for cord in grid_path:
-                            drawGrid(map, resources, message, buildings,ants,ai)
-                            time.sleep(0.05)
-                            removeant(prev_cord)
-                            prev_cord = cord
-                            drawant(cord, current_ant.color)
-                            pygame.display.update()
-                        ant = pygame.Rect(end[1]*25, end[0]*25, blockSize, blockSize)
-                        current_ant.rect = ant
-                        current_ant.position = end
-                        print(end)
-                        ants.append(current_ant)
-                        map[end[0]][end[1]] = 1 #creates wall under ant
-
-                        continue
+                            continue
+                        else:
+                            current_ant.actions += 1
+                            ants.append(current_ant)
+                            message = 'Cannot move an ant into a wall'
+                            continue
         
                     if len(ants) != 0:
                         for ant in ants:

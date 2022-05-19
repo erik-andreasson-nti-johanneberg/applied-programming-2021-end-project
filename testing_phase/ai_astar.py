@@ -136,6 +136,7 @@ def find_opening(start, wall_direction, map, end):
         
 # end MUST be a tuple
 def ai_astar(start,end,map): #pathfinding system
+    iterations = 0
     # print(map)
     open_list = []
     closed_list = []
@@ -156,6 +157,10 @@ def ai_astar(start,end,map): #pathfinding system
 
     # Get the current node
     while True:
+
+        if iterations > 1000:
+            return True
+
         if found_wall:
             # print('closed list prior')
             # print(closed_list)
@@ -302,5 +307,6 @@ def ai_astar(start,end,map): #pathfinding system
             # print(child.position)
             # print("")
             open_list.append(child)
+        iterations += 1
         # print("")
         # print("")

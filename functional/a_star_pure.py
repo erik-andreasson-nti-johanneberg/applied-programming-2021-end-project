@@ -136,6 +136,7 @@ def find_opening(start, wall_direction, map, end):
         
 
 def astar(start,end,map): #pathfinding system
+    iterations = 0
     # print(map)
     open_list = []
     closed_list = []
@@ -156,6 +157,11 @@ def astar(start,end,map): #pathfinding system
 
     # Get the current node
     while True:
+        print(open_list)
+
+        if iterations > 1000:
+            return [end]
+
         if found_wall:
             # print('closed list prior')
             # print(closed_list)
@@ -175,7 +181,10 @@ def astar(start,end,map): #pathfinding system
             # print(closed_list)
         else:
             # print('we made it here')
-            current_node = open_list[0]
+            try:
+                current_node = open_list[0]
+            except:
+                return [end]
             current_index = 0
             # print(open_list)
             for index, item in enumerate(open_list):
@@ -193,12 +202,11 @@ def astar(start,end,map): #pathfinding system
 
         # print(current.position)
 
-        if current_node == end_node:
-            return path
-
         # Found the goal
         # if current_node == end_node:
         #     pass
+        if current_node == end_node:
+            return path
 
 
         children = []
@@ -302,5 +310,4 @@ def astar(start,end,map): #pathfinding system
             # print(child.position)
             # print("")
             open_list.append(child)
-        # print("")
-        # print("")
+        iterations += 1
